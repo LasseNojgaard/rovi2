@@ -1,0 +1,37 @@
+<launch>
+<group>
+  <arg name="set_workcell" default="1" />
+  <group if="$(arg set_workcell)">
+    <arg name="workcell_path" default="$(find robot_plugin)/WorkCell/WRS-RobWork/WRS_v3.wc.xml" />
+    <param name="/caros/workcell" value="$(arg workcell_path)" />
+  </group>
+
+  <group>
+    <include file="$(find caros_universalrobot)/launch/caros_universalrobot_param.xml" ns="caros_universalrobot">
+    </include>
+    <node pkg="caros_universalrobot" type="caros_universalrobot_node" name="caros_universalrobot">
+    </node>
+  </group>
+
+ <group>
+   <include file="$(find caros_universalrobot)/launch/caros_universalrobot2_param.xml" ns="caros_universalrobot2"></include>
+    <node pkg="caros_universalrobot" type="caros_universalrobot_node" name="caros_universalrobot2">
+    </node>
+ </group>
+</group>
+
+ <group>
+  <node pkg="robotiq_2f_driver" type="robotiq_2f_driver" name="robotiq_2f_driver">
+  </node>
+ </group>
+
+ <group>
+  <node name="wsg_50_driver"  pkg="wsg_50_driver" type="wsg_50_ip">
+	<param name="ip" type="string" value="192.168.1.20"/>
+	<param name="port" type="int" value="1000"/>
+  </node>
+  </group>
+
+
+
+</launch>
