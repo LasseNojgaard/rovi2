@@ -1,0 +1,84 @@
+ 
+<DHJoint name="Joint0" alpha="0" a="0" d="0" offset="0" type="schilling"></DHJoint>
+
+ 
+<DHJoint name="Joint1" alpha="90" a="0" d="0.128" offset="0" type="schilling"></DHJoint>
+
+
+<DHJoint name="Joint2" alpha="0" a="-0.6127" d="0" offset="0" type="schilling"></DHJoint>
+
+ 
+<DHJoint name="Joint3" alpha="0" a="-0.5716" d="0" offset="0" type="schilling"></DHJoint>
+
+
+<DHJoint name="Joint4"  alpha="90" a="0" d="0.1639" offset="0" type="schilling"></DHJoint>
+
+ 
+<DHJoint name="Joint5" alpha="-90" a="0" d="0.1157" offset="0" type="schilling"></DHJoint>
+
+
+
+ <Frame name="Flange" refframe="Joint5" >
+	<RPY>0 0 0</RPY><Pos>0 0 0.0922</Pos>
+ </Frame>
+
+ <PosLimit refjoint="Joint0" min="-360" max="360" />
+ <PosLimit refjoint="Joint1" min="-270" max="90" />
+ <PosLimit refjoint="Joint2" min="-360" max="360" />
+ <PosLimit refjoint="Joint3" min="-270" max="90" /> 
+ <PosLimit refjoint="Joint4" min="-360" max="360" />
+ <PosLimit refjoint="Joint5" min="-360" max="360" />
+
+ <VelLimit refjoint="Joint0" max="120" />
+ <VelLimit refjoint="Joint1" max="120" />
+ <VelLimit refjoint="Joint2" max="180" />
+ <VelLimit refjoint="Joint3" max="180" /> 
+ <VelLimit refjoint="Joint4" max="180" />
+ <VelLimit refjoint="Joint5" max="180" />
+
+ <AccLimit refjoint="Joint0" max="120" />
+ <AccLimit refjoint="Joint1" max="120" />
+ <AccLimit refjoint="Joint2" max="120" />
+ <AccLimit refjoint="Joint3" max="120" /> 
+ <AccLimit refjoint="Joint4" max="120" />
+ <AccLimit refjoint="Joint5" max="120" />
+
+ 
+ 
+ 
+<Drawable name="flangeGeo" refframe="Base">
+  	<RPY>180 0 90</RPY> <Pos> 0 0 0</Pos>
+  	<Polytope file="Geometry/Base.obj" />
+ </Drawable>
+
+ <Drawable name="Joint0Geo" refframe="Joint0">
+  	<RPY> 180 180 0</RPY> <Pos> 0 0 0.128</Pos>
+  	<Polytope file="Geometry/joint0.obj" />
+ </Drawable>
+ 
+ <Drawable name="Joint1Geo" refframe="Joint1">
+	<RPY> 90 180 0 </RPY> <Pos> 0.128	0 0</Pos>
+  	<Polytope file="Geometry/joint1.obj" />
+ </Drawable>
+
+ <Drawable name="Joint2Geo" refframe="Joint2">
+	<RPY>90 180 0 </RPY> <Pos> 0.7407 0 0</Pos>
+  	<Polytope file="Geometry/joint2.obj" />
+ </Drawable>
+
+ <Drawable name="Joint3Geo" refframe="Joint3">
+  	<RPY> 0 180 0 </RPY> <Pos> 0 -0.0675 0.163891</Pos>
+  	<Polytope file="Geometry/joint3.obj" />
+ </Drawable>
+
+ <Drawable name="Joint4Geo" refframe="Joint4">
+  	<RPY> 0 0 180 </RPY> <Pos> 0 0.0675 0.1157</Pos> 
+  	<Polytope file="Geometry/joint4.obj" /> 
+ </Drawable>
+
+  <Drawable name="Joint5Geo" refframe="Flange" >
+	<RPY> 0 0 -90</RPY> <Pos>0.067219 -0.026351 -0.001826</Pos>
+	<Polytope file="Geometry/ToolFlange.obj" /> 
+ </Drawable>
+
+ <ProximitySetup file="ProximitySetup.xml"/>

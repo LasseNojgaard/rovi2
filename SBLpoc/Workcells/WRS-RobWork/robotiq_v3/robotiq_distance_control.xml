@@ -1,0 +1,188 @@
+<!--
+This model allows control of the distance between the fingers, and the angle of each finger.
+The model is supposed to be similar to how the physical control of a Robotiq gripper is.
+It is slightly more complex than the finger control model.
+The distance control is modelled with a serial chain between the two fingers, consisting of a revolute, prismatic and revolute joint.
+The prismatic joint controls the distance, while a revolute joint at each finger tip controls the angle of the finger individually.
+-->
+
+  <Define id="MotorFilange">
+   <Drawable name="MotorJointGeometry" refframe="MotorJoint">
+    <Pos>-0.0348630128021 0.0308650378967 0</Pos> <!-- R(7.39406329 degrees)*[-0.03061 0.035095] -->
+    <RPY>7.39406329 0 0</RPY>
+   <Polytope file="geometry/motor_joint"/>
+   </Drawable>
+   <PosLimit refjoint="MotorJoint" min="-10" max="100" />
+   <VelLimit refjoint="MotorJoint" max="120" />
+   <AccLimit refjoint="MotorJoint" max="60" />
+   
+   <Joint name="OuterLink" type="Revolute" state="Passive">
+    <Pos>0.03175 0 0</Pos>
+    <RPY>0.000602288549 0 0</RPY>
+ 	<Drawable name="OuterLinkGeometry">
+		<Pos>-0.06661270552 0.03086573817 0</Pos> <!-- R(7.393461 degrees)*[-0.062087 0.039181] -->
+		<RPY>7.393461 180 0</RPY>
+		<Polytope file="geometry/outer_link"/>
+	</Drawable>
+   </Joint>
+   <PosLimit refjoint="OuterLink" min="-60" max="60" />
+   <VelLimit refjoint="OuterLink" max="120" />
+   <AccLimit refjoint="OuterLink" max="60" />
+   
+   <Joint name="Finger" type="Revolute" state="Passive">
+    <Pos>0 0.04752 0</Pos>
+    <RPY>7.5 0 0</RPY>
+ 	<Drawable name="OuterLinkGeometry">
+		<Pos>-0.068202 -0.007944 0</Pos>
+		<RPY>0 180 0</RPY>
+		<Polytope file="geometry/finger"/>
+	</Drawable>
+   </Joint>
+   <PosLimit refjoint="Finger" min="-60" max="60" />
+   <VelLimit refjoint="Finger" max="120" />
+   <AccLimit refjoint="Finger" max="60" />
+  </Define>
+
+  <Define id="PassiveFilange">
+   <Joint name="PassiveJoint" type="Revolute" state="Passive">
+    <Pos>0 0 0</Pos>
+    <RPY>-40.5471416 0 0</RPY>
+    <Drawable name="PassiveJoint">
+	 <Pos>0 0 0</Pos>
+	 <RPY>0 0 0</RPY>
+	 <Polytope file="geometry/inner_link"/>
+    </Drawable>
+   </Joint>
+   <PosLimit refjoint="PassiveJoint" min="-10" max="50" />
+   <VelLimit refjoint="PassiveJoint" max="120" />
+   <AccLimit refjoint="PassiveJoint" max="60" />
+
+   <Joint name="LinkConnection" type="Revolute" state="Passive">
+    <Pos>0 0.057150463104 0</Pos>
+    <RPY>41.2 0 0</RPY>
+   </Joint>
+   <PosLimit refjoint="LinkConnection" min="-100" max="100" />
+   <VelLimit refjoint="LinkConnection" max="120" />
+   <AccLimit refjoint="LinkConnection" max="60" />
+  </Define>
+
+  <Frame name="Base">
+   <Pos>0 0 0</Pos>
+   <RPY>0 0 0</RPY>
+   <Drawable name="BaseGeometry">
+    <Pos>0 0.089888 0</Pos>
+    <RPY>0 0 0</RPY>
+    <Polytope file="geometry/base" />
+   </Drawable>
+  </Frame>
+  
+  <Frame name="LeftMotor" refframe="Base" />
+  <SerialChain name="LeftMotor">
+   <Frame name="Offset">
+    <Pos>-0.03061 0.054793 0</Pos>
+    <RPY>0 180 0</RPY>
+   </Frame>
+   <Joint name="MotorJoint" type="Revolute" state="Passive">
+    <Pos>0 0 0</Pos>
+    <RPY>-7.39406329 0 0</RPY>
+   </Joint>
+   <Use id="MotorFilange"/>
+  </SerialChain>
+  <Frame name="LeftMotorEnd">
+   <Pos>-0.02577 0.03402 0</Pos>
+   <RPY>0 -90 0</RPY>
+  </Frame>
+
+  <Frame name="LeftPassive" refframe="Base" />
+  <SerialChain name="LeftPassive">
+   <Frame name="Offset">
+    <Pos>-0.01270 0.061308 0</Pos>
+    <RPY>0 180 0</RPY>
+   </Frame>
+   <Use id="PassiveFilange"/>
+  </SerialChain>
+  <Frame name="LeftPassiveEnd">
+   <!-- <Pos>-0.00787 0.0275 0</Pos> -->
+   <Pos>-0.0078334751 0.0274779453 0</Pos>
+   <RPY>0 -90 0</RPY>
+  </Frame>
+  
+  <Frame name="RightMotor" refframe="Base" />
+  <SerialChain name="RightMotor">
+   <Frame name="Offset">
+    <Pos>0.03061 0.054793 0</Pos>
+    <RPY>0 0 0</RPY>
+   </Frame>
+   <Joint name="MotorJoint" type="Revolute" state="Passive">
+    <Pos>0 0 0</Pos>
+    <RPY>-7.39406329 0 0</RPY>
+    <Depend on="LeftMotor.MotorJoint" gain="1" offset="0" />
+   </Joint>
+   <Use id="MotorFilange"/>
+  </SerialChain>
+  <Frame name="RightMotorEnd">
+   <Pos>-0.02577 0.03402 0</Pos>
+   <RPY>0 -90 0</RPY>
+  </Frame>
+
+  <Frame name="RightPassive" refframe="Base" />
+  <SerialChain name="RightPassive">
+   <Frame name="Offset">
+    <Pos>0.01270 0.061308 0</Pos>
+    <RPY>0 0 0</RPY>
+   </Frame>
+   <Use id="PassiveFilange"/>
+  </SerialChain>
+  <Frame name="RightPassiveEnd">
+   <!-- <Pos>-0.00787 0.0275 0</Pos> -->
+   <Pos>-0.0078334751 0.0274779453 0</Pos>
+   <RPY>0 -90 0</RPY>
+  </Frame>
+
+  <Frame name="Distance" refframe="LeftPassiveEnd" />
+  <SerialChain name="Distance">
+   <Joint name="DistanceAngle1" type="Revolute" state="Active">
+    <Pos>0 0 0</Pos>
+    <RPY>0 90 0</RPY>
+   </Joint>
+   <PosLimit refjoint="DistanceAngle1" min="-45" max="45" />
+   <VelLimit refjoint="DistanceAngle1" max="120" />
+   <AccLimit refjoint="DistanceAngle1" max="60" />
+   <Joint name="FingerDistance" type="Prismatic" state="Active">
+    <Pos>0 0 0</Pos>
+    <RPY>0 -90 0</RPY>
+   </Joint>
+   <PosLimit refjoint="FingerDistance" min="0" max="0.085" />
+   <VelLimit refjoint="FingerDistance" max="120" />
+   <AccLimit refjoint="FingerDistance" max="60" />
+   <Joint name="DistanceAngle2" type="Revolute" state="Active">
+    <Pos>0 0 0</Pos>
+    <RPY>0 -90 0</RPY>
+   </Joint>
+   <PosLimit refjoint="DistanceAngle2" min="-45" max="45" />
+   <VelLimit refjoint="DistanceAngle2" max="120" />
+   <AccLimit refjoint="DistanceAngle2" max="60" />
+  </SerialChain>
+  <Frame name="DistanceEnd">
+   <Pos>0 0 0</Pos>
+   <RPY>0 -90 0</RPY>
+  </Frame>
+
+  <ProximitySetup file="robotiq.prox.xml" />
+
+  <Junction>
+   <Chains>LeftMotor</Chains>
+   <Chains>LeftPassive</Chains>
+  </Junction>
+
+  <Junction>
+   <Chains>RightMotor</Chains>
+   <Chains>RightPassive</Chains>
+  </Junction>
+
+  <Junction>
+   <Chains>LeftPassive Distance</Chains>
+   <Chains>RightPassive</Chains>
+  </Junction>
+
+  <Q name="Home">0 0.085 0</Q>

@@ -1,0 +1,70 @@
+<WorkCell name="WorldRobotSummit2018WorkCell">
+
+<Frame name="RefFrame">
+	<Pos>0 0 0</Pos>
+	<RPY>0 0 90</RPY>
+</Frame>
+
+<!--Reference frame -->
+<Frame name="FlexCell" refframe="RefFrame">
+	<Pos>0 0.2275 0</Pos>
+	<RPY>0 180 0</RPY>
+</Frame>
+
+<!--Robots-->
+
+
+<!--    
+    Frame
+    Joint
+    DHJoint
+    CollisionModel
+    Drawable
+    PosLimit
+    VelLimit
+    AccLimit
+    Property
+    SerialChain
+    CollisionSetup
+    Q 
+-->
+
+
+<TreeDevice>
+    <!--Frame-->
+    <!--Joint-->
+    <!--DHJoint-->
+    <!--CollisionModel-->
+    <!--Drawable-->
+    <!--PosLimit-->
+    <!--VelLimit-->
+    <!--AccLimit-->
+    <!--Property-->
+    <!--SerialChain-->
+    <!--CollisionSetup-->
+    <!--Q-->
+
+</TreeDevice>
+
+
+
+<!--
+<TreeDevice name="UR1012">
+	<Frame name="Base">
+	<RPY>0 0 -90</RPY><Pos>0 0 0</Pos>
+	</Frame>
+	<Frame name="Base2">
+	<RPY>0 0 -90</RPY><Pos>0 0 0</Pos>
+	</Frame> 
+
+	<Include file="UR1012/WRS-UR.xml" /> 
+
+	<Q name="Home">-0.019 -2.743 0.801 -2.042 -1.571 1.203 -0.019 -2.743 0.801 -2.042 -1.571 1.203</Q>
+
+</TreeDevice>
+-->
+
+<!--
+<ProximitySetup file="ProximitySetup.xml" />
+-->
+</WorkCell>

@@ -1,0 +1,79 @@
+	<!-- Include either DHParam.xml or PosRPYParam.xml -->
+	<Include file="DHParam.xml" />
+
+	<Frame name="Flange" refframe="Joint5">
+		<RPY>0 0 0</RPY>
+		<Pos>0 0 0.117</Pos>
+	</Frame>
+	
+	<Frame name="TCP" refframe="Joint5">
+		<RPY>0 0 0</RPY>
+		<Pos>0 0 0</Pos>
+	</Frame>
+	
+	
+
+	<PosLimit refjoint="Joint0" min="-360" max="360" />
+	<PosLimit refjoint="Joint1" min="-360" max="360" />
+	<PosLimit refjoint="Joint2" min="-360" max="360" />
+	<PosLimit refjoint="Joint3" min="-360" max="360" />
+	<PosLimit refjoint="Joint4" min="-360" max="360" />
+	<PosLimit refjoint="Joint5" min="-360" max="360" />
+
+	<VelLimit refjoint="Joint0" max="120" />
+	<VelLimit refjoint="Joint1" max="120" />
+	<VelLimit refjoint="Joint2" max="180" />
+	<VelLimit refjoint="Joint3" max="180" />
+	<VelLimit refjoint="Joint4" max="180" />
+	<VelLimit refjoint="Joint5" max="180" />
+
+	<AccLimit refjoint="Joint0" max="120" />
+	<AccLimit refjoint="Joint1" max="120" />
+	<AccLimit refjoint="Joint2" max="120" />
+	<AccLimit refjoint="Joint3" max="120" />
+	<AccLimit refjoint="Joint4" max="120" />
+	<AccLimit refjoint="Joint5" max="120" />
+
+	<Drawable name="flangeGeo" refframe="Base">
+		<RPY>0 0 90</RPY>
+		<Pos>0 0 0</Pos>
+		<Polytope file="Geometry/Base" />
+	</Drawable>
+
+	<Drawable name="Joint0Geo" refframe="Joint0">
+		<RPY>0 0 90</RPY>
+		<Pos>0 0 0</Pos>
+		<Polytope file="Geometry/Joint0" />
+	</Drawable>
+
+	<Drawable name="Joint1Geo" refframe="Joint1">
+		<RPY>90 0 0</RPY>
+		<Pos>0.181 0 0</Pos>
+		<Polytope file="Geometry/Joint1" />
+	</Drawable>
+
+	<Drawable name="Joint2Geo" refframe="Joint2">
+		<RPY>90 0 0</RPY>
+		<Pos>0.794 0 0</Pos>
+		<Polytope file="Geometry/Joint2" />
+	</Drawable>
+
+	<Drawable name="Joint3Geo" refframe="Joint3">
+		<RPY>180 0 0</RPY>
+		<Pos>0 1.365 0</Pos>
+		<Polytope file="Geometry/Joint3" />
+	</Drawable>
+
+	<Drawable name="Joint4Geo" refframe="Joint4">
+		<RPY>180 0 90</RPY>
+		<Pos>0 -0.174 -1.365</Pos>
+		<Polytope file="Geometry/Joint4" />
+	</Drawable>
+
+	<Drawable name="Joint5Geo" refframe="Flange">
+		<RPY>180 0 0</RPY>
+		<Pos>0 1.485 -0.291</Pos>
+		<Polytope file="Geometry/ToolFlange" />
+	</Drawable>
+
+	<ProximitySetup file="ProximitySetup.xml" />
