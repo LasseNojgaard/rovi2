@@ -12,8 +12,19 @@ find_package(catkin REQUIRED COMPONENTS
   robotiq_2f_driver
   std_msgs
   wsg_50_driver
+  robotiq_2f_msgs
+  message_generation
+  wsg_50_common
 )
+## Adding message files
+add_message_files(
+   FILES
+   Grasp_cmd.msg
+ )
 
+
+## Generate added messages and services
+generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2)
 
 ###################################
 ## catkin specific configuration ##
@@ -27,9 +38,12 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rovi2
-  CATKIN_DEPENDS caros_universalrobot robotiq_2f_driver std_msgs wsg_50_driver
+  CATKIN_DEPENDS caros_universalrobot robotiq_2f_driver std_msgs wsg_50_driver robotiq_2f_msgs message_runtime wsg_50_common
 #  DEPENDS system_lib
 )
+
+
+
 
 ###########
 ## Build ##
@@ -119,3 +133,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(Grasp src/Grasp.cpp)
+target_link_libraries(Grasp ${catkin_LIBRARIES})
+add_dependencies(Grasp rovi2_generate_messages_cpp)

@@ -1,0 +1,6 @@
+string ID
+bool grasp
+bool release
+bool homeGripper
+float32 speed
+float32 force
