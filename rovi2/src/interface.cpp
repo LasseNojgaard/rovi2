@@ -28,12 +28,30 @@ using namespace rw::trajectory;
 Device::Ptr device1;
 Device::Ptr device2;
 State state;
+Transform3D<> relatePosetoBase(WorkCell::Ptr wc, Device::Ptr device ,Transform3D<> pose, State state){
+  Frame* table=wc->findFrame("TopPlate");
+  Frame* base=device->getBase();
+  Transform3D<> table2base= table->fTf(base,state);
+  return table*table2base;
+}
 
-rw::math::Q q findGoalConfig(Device::Ptr device_1,Device::Ptr device_2, State state, Transform3D<> pose1, Transform3D pose2)
-{
+rw::math::Q findGoalConfig(Device::Ptr device_1,Device::Ptr device_2, State state, Transform3D<> pose1, Transform3D pose2) {
+  //create solvers
   Q result(12);
-  rw::invkin::JacobianIKSolver solver1(device_1)
-  rw::invkin::JacobianIKSolver solver2(device_2)
+  rw::invkin::JacobianIKSolver solver1(device_1,state);
+  rw::invkin::JacobianIKSolver solver2(device_2,state);
+
+  //solve
+  Q inter1=solver1.solve(pose1,state);
+  Q inter2=solver2.solve(pose2,state);
+
+  for(int i=0;i<result.size()/2;i++)
+  {
+    result[i]=inter1[i];
+    result[i+inter1.size()-1]=inter2[i];
+  }
+
+  return result;
 }
 
 int main(int argc, char const *argv[]) {
