@@ -60,7 +60,7 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     //viewer->spin();
     ROS_INFO("SAVING IMAGE");
 
-    pcl::io::savePCDFileASCII ("scene.pcd", *scene);
+    //pcl::io::savePCDFileASCII ("scene.pcd", scene);
     // Show
     ROS_INFO("Show1 section");
     {

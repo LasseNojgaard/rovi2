@@ -11,7 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   roscpp
+  message_generation
   sensor_msgs
+  #std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -48,11 +50,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   Object_pose.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -69,8 +70,7 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
+ generate_messages(DEPENDENCIES rovi2 )
 #   sensor_msgs
 # )
 
@@ -106,7 +106,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES pose_ros
-#  CATKIN_DEPENDS pcl_conversions pcl_ros roscpp sensor_msgs
+  CATKIN_DEPENDS message_runtime
+# <pcl_conversions pcl_ros roscpp sensor_msgs
 #  DEPENDS system_lib
 )
 

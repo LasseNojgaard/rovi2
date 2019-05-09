@@ -1,0 +1,16 @@
+<WorkCell name="Schunk-RC-1216-H">
+
+<SerialDevice name="Schunk-RC-1216-H-Rotate">
+<Include file="Schunk-RC-1216-H-Rotate.xml" />
+</SerialDevice>
+<Frame name="SchunkRotateEnd" />
+
+<Frame name="SchunkGraspRef" refframe="Schunk-RC-1216-H-Rotate.TCP" />
+
+<TreeDevice name="Schunk-RC-1216-H-Grasp">
+<Include file="Schunk-RC-1216-H-Grasp.xml" />
+</TreeDevice>
+
+<!--<ProimitySetup file="ProximitySetup.xml"/>-->
+
+</WorkCell>
