@@ -36,14 +36,6 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
 
-//#include <pcl/features/shot.h>
-
-
-/**
- * This tutorial demonstrates simple receipt of messages over the ROS system.
- */
-
-
 using namespace std;
 using namespace pcl;
 using namespace pcl::common;
@@ -55,26 +47,6 @@ using namespace Eigen;
 
 typedef PointNormal PointT;
 typedef Histogram<153> FeatureT;
-//typedef pcl::SHOT ShotFeature;
-
-//pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZ>);
-//pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-
-//ros::Publisher pub;
-
-float radiusSearch=15;//30;
-float bestRadius=0;
-float bestRMSE=0;
-float bestRadiusInliers=0;
-float bestInliers=0;
-
-void nearest_feature(const FeatureT& query, const PointCloud<FeatureT>& target, int &idx, float &distsq);
-
-PointCloud<PointT>::Ptr global_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>::Ptr sceneObj);
-
-PointCloud<PointT>::Ptr local_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>::Ptr sceneObj);
-
-float get_ThetaY(Matrix4f transform);
 
 void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosInput)
 {   
@@ -86,6 +58,7 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     pcl::fromPCLPointCloud2(pcl_pc2,*scene);
     //viewer->addPointCloud<pcl::PointXYZ> (scene, "cloud");
     //viewer->spin();
+    ROS_INFO("SAVING IMAGE");
 
     //pcl::io::savePCDFileASCII ("scene.pcd", scene);
     // Show
