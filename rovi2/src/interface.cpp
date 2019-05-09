@@ -29,10 +29,11 @@ Device::Ptr device1;
 Device::Ptr device2;
 State state;
 
-rw::math::Q q findGoalConfig()
+rw::math::Q q findGoalConfig(Device::Ptr device_1,Device::Ptr device_2, State state, Transform3D<> pose1, Transform3D pose2)
 {
-rw::invkin::JacobianIKSolver solver1(device1)
-rw::invkin::JacobianIKSolver solver2(device2)
+  Q result(12);
+  rw::invkin::JacobianIKSolver solver1(device_1)
+  rw::invkin::JacobianIKSolver solver2(device_2)
 }
 
 int main(int argc, char const *argv[]) {
