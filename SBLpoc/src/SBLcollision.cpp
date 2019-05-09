@@ -132,22 +132,14 @@ bool extBinarySearch(double eps, Q qStart, Q qEnd, State& aState, CollisionDetec
         steps = pow(2, i-1);
 
         step = extDeltaQ / (double)steps;
-        if(DEBUG)
-        {
-            cout << "extBinarySarch: steps for i = " << i << " steps = " << steps << endl;
-            cout << "extBinarySarch: step for i = " << i << " step = " << step << endl;
-        }
 
         for(int j = 1; j <= steps; j++)
         {
             currQ = qStart + (j - 0.5)*step;
-            if(DEBUG)
-                cout << "extBinarySarch: current Q = " << currQ << endl;
 
             aDevice->setQ(currQ, aState);
             if((currQ - qStart).norm2() <= deltaQ.norm2())
             {
-                collCount++;
                 if(aDetector->inCollision(aState,&data))
                     return true;
             }
@@ -156,27 +148,40 @@ bool extBinarySearch(double eps, Q qStart, Q qEnd, State& aState, CollisionDetec
     return false;
 }
 
-rw::trajectory::Path<Q> pathPrune(rw::trajectory::Path<Q> aPath)
+rw::trajectory::Path<Q> pathPrune(rw::trajectory::Path<Q> aPath, double eps, State theState, CollisionDetector::Ptr theDetector, TreeDevice::Ptr theDevice)
 {
-  rw::trajectory::Path<Q> tempPath;
+  rw::trajectory::Path<Q> tempPath = aPath;
 
-  int i = 0;
+  size_t i = 0;
   while (i < aPath.size()-2)
   {
-    if (extBinarySearch(double eps, Q qStart, Q qEnd, State& aState, CollisionDetector::Ptr aDetector, Device::Ptr aDevice) == 0)
+    bool collision = extBinarySearch(eps, tempPath[i], tempPath[i+2], theState, theDetector, theDevice);
+    cout << "Object:" << i << " and " << i+2 << "maybe in collision: " << collision << endl;
+    if (collision == 0)
     {
-      aPath[i+1].remove();
+      aPath.erase(aPath.begin()+i+1);
       if (i>0)
       {
-        i -=1;
+        i -= 1;
+      }
+      else
+      {
+        i += 1;
       }
     }
   }
 
-  return tempPath
+  return aPath;
 }
 
+rw::trajectory::Path<Q> interpolate()
+{
+  rw::trajectory::Path<Q> tempPath;
 
+
+
+  return tempPath;
+}
 
 
 //----------
@@ -271,27 +276,46 @@ int main()
     rw::trajectory::Path<Q> goodPath = SBL(positionBegin, endPointQ, detector, deviceTree, state, anEpsilon, workcell);
     double timeUsed = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
 
+    cout << "length of path: " << goodPath.size() << endl;
     for(size_t i = 0 ; i < goodPath.size() ; i++)
     {
-      cout << goodPath[i] << endl;
+      //cout << goodPath[i] << endl;
+    }
+
+    //--Path trimming
+    timeStart = clock();
+    rw::trajectory::Path<Q> prunedPath = pathPrune(goodPath, anEpsilon, state, detector, deviceTree);
+    double timeUsedPrune = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
+    cout << "length of path: " << prunedPath.size() << endl;
+    for (size_t i = 0; i < prunedPath.size(); i++)
+    {
+      //cout << prunedPath[i] << endl;
     }
 
 
 
 
+    cout << "Time used in seconds on SBL: " << timeUsed << endl;
+    cout << "Write out path: " << endl;
+    cout << "length of path: " << goodPath.size() << endl;
+
+
+    cout << "Time used in seconds on pruning: " << timeUsedPrune << endl;
+    cout << "Write out path: " << endl;
+    cout << "length of path: " << prunedPath.size() << endl;
 
     const std::vector<State> states = Models::getStatePath(*deviceTree, goodPath, state);
 
-
+    const std::vector<State> states2 = Models::getStatePath(*deviceTree, prunedPath, state);
 
 
 
     PathLoader::storeVelocityTimedStatePath(
         *workcell, states, "ex-path-planning.rwplay");
 
+    PathLoader::storeVelocityTimedStatePath(*workcell, states2, "ex-path-pruned-planning.rwplay");
         //--PathTesting
 
-        //--Path trimming
 
         //--Optimization
 
@@ -299,10 +323,44 @@ int main()
 
     cout << "-----------------------------------------------------------------" << endl;
 
+    Q testMin = {3, -1, -1, -1};
+    Q testMax = {3, 1, 1, 1};
 
-    cout << "Time used in seconds: " << timeUsed << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << path.size() << endl;
+    Q test2Min = {3, -1, -1, -1};
+    Q test2Max = {3, 1, 1, 1};
+
+    Q testres = Math::ranQ(testMin, testMax);
+    Q test2res = Math::ranQ(test2Min, test2Max);
+
+    cout << "Position norm 2: " << positionBegin.norm2() << endl;
+
+    cout << "EndpointQ norm 2: " << endPointQ.norm2() << endl;
+
+    cout << "Difference in norm2: " << positionBegin.norm2()-endPointQ.norm2() << endl;
+
+    cout << "Position norm 2:  " << testres.norm2() << endl;
+
+    cout << "EndpointQ norm 2: " << test2res.norm2() << endl;
+
+    cout << "Difference in norm2: " << testres.norm2()-test2res.norm2() << endl;
+    cout << "Real difference: " << abs(testres.norm2()-test2res.norm2()) << endl;
+
+    //double testnorm2 = testres.norm2();
+    //double test2norm2 = test2res.norm2();
+    double separation = 100;
+    double distance = abs(testres.norm2()-test2res.norm2());
+
+    double factor = distance*separation;
+
+    Q increment = (testres-test2res)/factor;
+
+
+    cout << "Increment" << increment.norm2() << endl;
+
+    cout << "Difference " << (testres.norm2()-test2res.norm2())/increment.norm2() << endl;
+
+    cout << factor << endl;
+
 
 
     string date = "Thu";
@@ -310,7 +368,7 @@ int main()
     somefile.open(date.append(".txt"));
 
     somefile<< "Test test \n";
-    somefile<< timeUsed << " , " << path.size();
+    somefile<< timeUsed << " , " << prunedPath.size();
     somefile.close();
 
     cout << "Done" << endl;

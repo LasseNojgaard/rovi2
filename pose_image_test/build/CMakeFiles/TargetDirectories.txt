@@ -1,0 +1,3 @@
+/home/student/Desktop/Projects/pose_image_test/build/CMakeFiles/rebuild_cache.dir
+/home/student/Desktop/Projects/pose_image_test/build/CMakeFiles/pose_image_test.dir
+/home/student/Desktop/Projects/pose_image_test/build/CMakeFiles/edit_cache.dir

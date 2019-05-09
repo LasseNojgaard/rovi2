@@ -1,0 +1,3 @@
+Radius: 0.015 K: 12 Inliers: 995 rmse: 0.00607185
+Radius: 0.055 K: 16 Inliers: 1061 rmse: 0.00593543
+Radius: 0.055 K: 16 Inliers: 1061 rmse: 0.00593543
