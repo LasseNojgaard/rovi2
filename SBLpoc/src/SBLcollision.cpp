@@ -66,101 +66,117 @@ clock_t timeStart;
 //--------------------
 // Functions
 
-rw::trajectory::Path<Q> SBL(double maxDistance, Q inputConfiguration)
+rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, CollisionDetector::Ptr aDetector, TreeDevice::Ptr aDeviceTree, State aState, double epsilon, WorkCell::Ptr aWorkcell)
 {
   rw::trajectory::Path<Q> somePath;
+  // Constraint
+  rw::pathplanning::QConstraint::Ptr treeConstraint = rw::pathplanning::QConstraint::make(aDetector, aDeviceTree, aState);
+  //rw::pathplanning::QConstraint::Ptr constraintB = rw::pathplanning::QConstraint::make(detector, deviceB, state);
+
+  CollisionDetector collissiondect(aWorkcell, ProximityStrategyYaobi::make());
+  //PKG , Check source fil for link fra yaobi.
+  // Interpolate path includeret i robwork
+  //CollisionDetector coldect(workcell, ProximityStrategyFactory::makeDefault());
+  QConstraint::Ptr constraint = QConstraint::make(&collissiondect, aDeviceTree, aState);
+
+  QEdgeConstraintIncremental::Ptr edgeconstraint = QEdgeConstraintIncremental::makeDefault(treeConstraint, aDeviceTree);
+
+  QToQPlanner::Ptr planner = SBLPlanner::makeQToQPlanner(SBLSetup::make(treeConstraint, edgeconstraint, aDeviceTree, epsilon, epsilon));
+
+  QSampler::Ptr cfreeQ = QSampler::makeConstrained(QSampler::makeUniform(aDeviceTree), treeConstraint, 100000);
+
+  Q pos = aDeviceTree->getQ(aState);
+
+  cout << "Making the trajectory from: " << endl;
+  cout << pos << endl;
+  cout << inputConfiguration << endl;
+
+  cout << "Next configuration: " << endl;
+  cout << outputConfiguration << endl;
+
+  cout << "Reaching down the rabbithole" << endl;
+  const bool ok = planner->query(inputConfiguration,outputConfiguration,somePath);
+  cout << "Done checking nextQ" << endl;
+  if(!ok)
+  {
+    std::cout << "Path " << "0" << " not found.\n" ;
+  }
+  else
+  {
+    cout << "Path found" << endl;
+  }
+
+  cout << "End" << endl;
 
   return somePath;
 }
 
-void SBLTest(double epsilon, int amount, int iterations, double increment, State theState, int randomMode)
+
+
+bool extBinarySearch(double eps, Q qStart, Q qEnd, State& aState, CollisionDetector::Ptr aDetector, Device::Ptr aDevice) //true = no collision, false = collision
 {
-  if(randomMode)
-  {
-    Math::seed(randomMode)
-  }
-  else
-  {
-    Math::seed()
-  }
+   Q deltaQ = qEnd-qStart;
+    double n = deltaQ.norm2() / eps;
+    int levels = ceil(log2(n));
 
-  string date = "Tue";
-  ofstream somefile;
-  somefile.open(date.append(".txt"));
+    Q extDeltaQ = (deltaQ/deltaQ.norm2()) * pow(2, levels) * eps;
 
-  Q pos = deviceTree->getQ(theState);
+    Q currQ;
+    Q step;
+    int steps;
 
-  Q minQ = deviceTree->getBounds().first()
-  Q maxQ = deviceTree->getBounds().second()
+    CollisionDetector::QueryResult data;
 
-  int counter = 0;
-
-  somefile << "date \n";
-  for(int j = 0; j < iterations; j++)
-  {
-    epsilon += increment;
-    for(int i = 0; i < amount; i++)
+    for(int i = 1; i <= levels; i++)
     {
-      cout << "Setting up SBL and starting timer" << endl;
-      timeStart = clock();
-      // Constraints
-      rw::pathplanning::QConstraint::Ptr ConstraintA = rw::pathplanning::QConstraint::make(detector, deviceTree, theState);
+        steps = pow(2, i-1);
 
-      CollisionDetector coldect(workcell, ProximityStrategyYaobi::make());
+        step = extDeltaQ / (double)steps;
+        if(DEBUG)
+        {
+            cout << "extBinarySarch: steps for i = " << i << " steps = " << steps << endl;
+            cout << "extBinarySarch: step for i = " << i << " step = " << step << endl;
+        }
 
-      QConstraint::Ptr constraint = QConstraint::make(&coldect, deviceTree, theState);
+        for(int j = 1; j <= steps; j++)
+        {
+            currQ = qStart + (j - 0.5)*step;
+            if(DEBUG)
+                cout << "extBinarySarch: current Q = " << currQ << endl;
 
-      QEdgeConstraintIncremental::Ptr edgeconstraint = QEdgeConstraintIncremental::makeDefault(ConstraintA, deviceTree);
-
-      QToQPlanner::Ptr planner = SBLPlanner::makeQToQPlanner(SBLSetup::make(ConstraintA, edgeconstraint, deviceTree, epsilon, epsilon));
-
-      QSampler::Ptr cfreeQ = QSampler::makeConstrained(QSampler::makeUniform(deviceTree), ConstraintA, 100000);
-
-      Q tempQ = Math::ranQ(minQ, maxQ);
-
-      Q endPos = tempQ;
-      cout << "pos: " << pos << endl;
-      cout << "endPos" << endPos << endl;
-      cout << "Making the trajectory" << endl;
-
-      rw::trajectory::Path<Q> path;
-
-      cout << "Begin" << endl;
-
-      cout << "Next configuration: " << endPointQ << endl;
-
-      cout << "Reaching down the rabbithole" << endl;
-      const bool ok = planner->query(pos,endPointQ,path);
-      cout << "Done checking nextQ" << endl;
-      if(!ok)
-      {
-        std::cout << "Path " << "0" << " not found.\n" ;
-      }
-      else
-      {
-        cout << "Path found" << endl;
-      }
-
-      cout << "End" << endl;
-
-      double timeUsed = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
-
-      const std::vector<State> states = Models::getStatePath(*deviceTree, path, state);
-
-      cout << "Time used in seconds: " << timeUsed << endl;
-      cout << "Write out path: " << endl;
-      cout << "length of path: " << path.size() << endl;
-
-      somefile << timeUsed << " ; " << path.size() << " ; " << epsilon " ; " << amount;
-
-      cout << counter+1 << " / " << amount*iterations << endl;
-      counter++;
+            aDevice->setQ(currQ, aState);
+            if((currQ - qStart).norm2() <= deltaQ.norm2())
+            {
+                collCount++;
+                if(aDetector->inCollision(aState,&data))
+                    return true;
+            }
+        }
     }
-
-    somefile.close();
-    cout << "Done" << endl;
-  }
+    return false;
 }
+
+rw::trajectory::Path<Q> pathPrune(rw::trajectory::Path<Q> aPath)
+{
+  rw::trajectory::Path<Q> tempPath;
+
+  int i = 0;
+  while (i < aPath.size()-2)
+  {
+    if (extBinarySearch(double eps, Q qStart, Q qEnd, State& aState, CollisionDetector::Ptr aDetector, Device::Ptr aDevice) == 0)
+    {
+      aPath[i+1].remove();
+      if (i>0)
+      {
+        i -=1;
+      }
+    }
+  }
+
+  return tempPath
+}
+
+
 
 
 //----------
@@ -181,7 +197,6 @@ int main()
     std::cout << "Trying to use workcell: " << wcFile << std::endl;
     std::cout << "with device(s): " << deviceAName << " with device(s): " << deviceBName << std::endl;
 
-
     // Load Workcell
     WorkCell::Ptr workcell = rw::loaders::WorkCellLoader::Factory::load(wcFile);
 
@@ -189,14 +204,6 @@ int main()
     Device::Ptr deviceA = workcell->findDevice(deviceAName);
     Device::Ptr deviceB = workcell->findDevice(deviceBName);
 
-    /*if(deviceA == NULL)
-    {
-        std::cerr << "Device: " << deviceAName << " not found!" << std::endl;
-    }
-    else
-    {
-        std::cerr << "Device: " << deviceAName << " found!" << std::endl;
-    }*/
     if (deviceA == NULL && deviceB == NULL)
     {
         std::cerr << "Device: " << deviceAName << " and device: " << deviceBName << " not found!" << std::endl;
@@ -229,10 +236,7 @@ int main()
 
     // Create a configuration
     cout << "Collecting configuration data" << endl;
-    //Q qMinA = deviceA->getBounds().first;
-    //Q qMaxA = deviceA->getBounds().second;
-    /*Q qMinB = deviceB->getBounds().first;
-    Q qMaxB = deviceB->getBounds().second;*/
+
     Math::seed();
 
     cout << "Making the vectorOfEnds" << endl;
@@ -244,6 +248,87 @@ int main()
     string TopPlateName = "TopPlate";
     cout << "making tree" << endl;
     TreeDevice::Ptr deviceTree = new TreeDevice(workcell->findFrame(refFrame), vectorOfEnds, "TreeDevice", state);
+
+    //----------------------------
+
+
+
+    Q positionBegin = deviceTree->getQ(state);
+
+    Q endPointQ = Q(12);
+
+    vector<double> configurationVector = {3.407494068145752, -1.9994360409178675, -1.8003206253051758,
+                                          1.8201419550129394, -0.6341050306903284, -5.036266628895895,
+                                          -0.35499412218202764, -2.6603156528868617, 2.1026347319232386,
+                                          0.20941845952954097, 0.6679062843322754, 1.9573044776916504};
+    for(int i = 0; i <12 ; i++)
+    {
+      endPointQ[i] = configurationVector[i];
+    }
+    double anEpsilon = 0.2;
+
+    timeStart = clock();
+    rw::trajectory::Path<Q> goodPath = SBL(positionBegin, endPointQ, detector, deviceTree, state, anEpsilon, workcell);
+    double timeUsed = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
+
+    for(size_t i = 0 ; i < goodPath.size() ; i++)
+    {
+      cout << goodPath[i] << endl;
+    }
+
+
+
+
+
+    const std::vector<State> states = Models::getStatePath(*deviceTree, goodPath, state);
+
+
+
+
+
+    PathLoader::storeVelocityTimedStatePath(
+        *workcell, states, "ex-path-planning.rwplay");
+
+        //--PathTesting
+
+        //--Path trimming
+
+        //--Optimization
+
+
+
+    cout << "-----------------------------------------------------------------" << endl;
+
+
+    cout << "Time used in seconds: " << timeUsed << endl;
+    cout << "Write out path: " << endl;
+    cout << "length of path: " << path.size() << endl;
+
+
+    string date = "Thu";
+    ofstream somefile;
+    somefile.open(date.append(".txt"));
+
+    somefile<< "Test test \n";
+    somefile<< timeUsed << " , " << path.size();
+    somefile.close();
+
+    cout << "Done" << endl;
+
+    return 0;
+}
+
+
+// TODO ----------------------
+
+/*
+    - Check the time needed to trim the paths and see how much time it cuts.
+      Check and see wether it is recommended or not.
+    - Make 10 paths and use the shortest of these to do the moves.
+    - Check the interpolation
+*/
+
+
 
     /*
     Q tempQA = Math::ranQ(qMinA,qMaxA);
@@ -284,144 +369,4 @@ int main()
 
     }
     cout << "Collision free config: " << tempQA << " , "<< endl << tempQB << endl;
-
-    cout << "Euclidian: " << tempQA.norm2() - tempQB.norm2() << endl;
-
-    //--Roadmap
-    //--TreeStructure
-
-    //--PathTesting
-
-    //--Path trimming
-
-    //--Optimization
-*/
-
-    //----------------------------
-
-    // Test for SBL
-    cout << "Setting up SBL" << endl;
-
-    timeStart = clock();
-    // Constraint
-    rw::pathplanning::QConstraint::Ptr ConstraintA = rw::pathplanning::QConstraint::make(detector, deviceTree, state);
-    //rw::pathplanning::QConstraint::Ptr constraintB = rw::pathplanning::QConstraint::make(detector, deviceB, state);
-
-    CollisionDetector coldect(workcell, ProximityStrategyYaobi::make());
-    //PKG , Check source fil for link fra yaobi.
-    // Interpolate path includeret i robwork
-    //CollisionDetector coldect(workcell, ProximityStrategyFactory::makeDefault());
-
-    QConstraint::Ptr constraint = QConstraint::make(&coldect, deviceTree, state);
-
-    QEdgeConstraintIncremental::Ptr edgeconstraint = QEdgeConstraintIncremental::makeDefault(ConstraintA, deviceTree);
-
-    double eps = 0.4;
-
-    QToQPlanner::Ptr planner = SBLPlanner::makeQToQPlanner(SBLSetup::make(ConstraintA, edgeconstraint, deviceTree, eps, eps));
-
-    QSampler::Ptr cfreeQ = QSampler::makeConstrained(QSampler::makeUniform(deviceTree), ConstraintA, 100000);
-
-    Q pos = deviceTree->getQ(state);
-
-    cout << "pos: " << pos << endl;
-    cout << "Making the trajectory" << endl;
-    Q endPointQ = Q(12);
-
-    vector<double> configurationVector = {3.407494068145752, -1.9994360409178675, -1.8003206253051758,
-                                          1.8201419550129394, -0.6341050306903284, -5.036266628895895,
-                                          -0.35499412218202764, -2.6603156528868617, 2.1026347319232386,
-                                          0.20941845952954097, 0.6679062843322754, 1.9573044776916504};
-    for(int i = 0; i <12 ; i++)
-    {
-      endPointQ[i] = configurationVector[i];
-    }
-
-    rw::trajectory::Path<Q> path;
-
-    //int maxCount = 5;
-
-    cout << "Begin" << endl;
-
-    cout << "Next configuration: " << endPointQ << endl;
-
-    cout << "Reaching down the rabbithole" << endl;
-    const bool ok = planner->query(pos,endPointQ,path);
-    cout << "Done checking nextQ" << endl;
-    if(!ok)
-    {
-      std::cout << "Path " << "0" << " not found.\n" ;
-    }
-    else
-    {
-      cout << "Path found" << endl;
-    }
-
-    /*
-    for(int cnt = 0; cnt < maxCount; cnt++)
-    {
-      cout << "Making nextQ " << endl;
-      const Q next = (pos+incrementation); cfreeQ->sample();
-
-      cout << "Next configuration: " << next << endl;
-
-      cout << "Checking the nextQ" << endl;
-      const bool ok = planner->query(pos,next,path,60);
-      cout << "Done checking nextQ" << endl;
-      if(!ok)
-      {
-        std::cout << "Path " << cnt << " not found.\n" ;
-      }
-      else
-      {
-        cout << "Path found" << endl;
-          pos = next;
-      }
-      cout << "cnt: " << cnt+1 << " / " << maxCount << " ------------------" <<endl;
-    }
-*/
-
-    cout << "End" << endl;
-
-    const std::vector<State> states = Models::getStatePath(*deviceTree, path, state);
-
-    PathLoader::storeVelocityTimedStatePath(
-        *workcell, states, "ex-path-planning.rwplay");
-
-    double timeUsed = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
-
-    cout << "Time used in seconds: " << timeUsed << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << path.size() << endl;
-
-    cout << path[2].norm2()-path[3].norm2() << endl;
-/*
-    for(size_t i = 0; i < path.size(); i++ )
-    {
-      cout << path[i] << endl;
-    }
-*/
-
-    string date = "Tue";
-    ofstream somefile;
-    somefile.open(date.append(".txt"));
-
-    somefile<< "Test test \n";
-    somefile<< timeUsed << " , " << path.size();
-    somefile.close();
-
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
-
-// TODO ----------------------
-
-/*
-    - Check the time needed to trim the paths and see how much time it cuts.
-      Check and see wether it is recommended or not.
-    - Make 10 paths and use the shortest of these to do the moves.
-    - Check the interpolation
 */
