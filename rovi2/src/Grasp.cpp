@@ -31,12 +31,12 @@ void graspCallback(const rovi2::Grasp_cmd::ConstPtr& msg)
   release = msg->release;
   home = msg->homeGripper;
 
-  if(gripperID == "robotiq")
+  if(gripperID == "UR10B")
     {
       robo_speed = msg->speed;
       robo_force = msg->force;
     }
-  if(gripperID == "wsg")
+  if(gripperID == "UR10A")
     {
       wsg_speed = msg->speed;
       wsg_force = msg->force;
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     if(publish)
     {
       publish=false;
-      if(gripperID == "robotiq")
+      if(gripperID == "UR10B")
       {
         if(grip && !release)
           {
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
           ROS_INFO("ERROR: Grasp cmd confusion! grasp and release ==True!");
         }
       }
-        if(gripperID == "wsg")
+        if(gripperID == "UR10A")
           {
             if(grip && !release)
               {
