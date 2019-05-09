@@ -17,9 +17,15 @@ find_package(catkin REQUIRED COMPONENTS
   wsg_50_common
 )
 ## Adding message files
-add_message_files(
+#add_message_files(
+#   FILES
+#   Grasp_cmd.msg
+# )
+
+## Generate services in the 'srv' folder
+ add_service_files(
    FILES
-   Grasp_cmd.msg
+   Grasp_cmd.srv
  )
 
 
@@ -134,6 +140,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(Grasp src/Grasp.cpp)
-target_link_libraries(Grasp ${catkin_LIBRARIES})
-add_dependencies(Grasp rovi2_generate_messages_cpp)
+add_executable(grasp src/grasp_service.cpp)
+target_link_libraries(grasp ${catkin_LIBRARIES})
+add_dependencies(grasp rovi2_generate_messages_cpp)
