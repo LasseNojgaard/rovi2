@@ -1,8 +1,8 @@
 Info,  T0: this is my info call
-Info,  T0: Load /home/student/SBLpoc/build/../Workcells/WRS-RobWork/UR10e/Geometry/ToolFlange.obj
+Info,  T0: Load /home/student/rovi2/SBLpoc/build/../Workcells/WRS-RobWork/UR10e/Geometry/ToolFlange.obj
 Debug, T0: Assimp 4.1.0 amd64 gcc debug shared singlethreaded
 Info,  T0: Found a matching importer for this file format: Wavefront Object Importer.
-Info,  T0: Import root directory is '/home/student/SBLpoc/build/../Workcells/WRS-RobWork/UR10e/Geometry/'
+Info,  T0: Import root directory is '/home/student/rovi2/SBLpoc/build/../Workcells/WRS-RobWork/UR10e/Geometry/'
 Info,  T0: Entering post processing pipeline
 Debug, T0: Generate spatially-sorted vertex cache
 Debug, T0: JoinVerticesProcess begin
