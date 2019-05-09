@@ -1,0 +1,14 @@
+wc = rws.getRobWorkStudio():getWorkCell()
+state = wc:getDefaultState()
+UR10A = wc:findDevice("UR10A")
+UR10B = wc:findDevice("UR10B")
+
+function setQ(q)
+qq1 = rw.Q(#q/2,q[1],q[2],q[3],q[4],q[5],q[6])
+qq2 = rw.Q(#q/2,q[7],q[8],q[9],q[10],q[11],q[12])
+UR10A:setQ(qq1,state)
+UR10B:setQ(qq2,state)
+
+rws.getRobWorkStudio():setState(state)
+rw.sleep(0.1)
+end
