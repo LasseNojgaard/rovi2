@@ -17,6 +17,7 @@ std::string node_name = ros::this_node::getName() + ": ";
 bool grip = false;
 bool release = false;
 bool home = false;
+
 float robo_gripDistance = 0.043;
 float robo_releaseDistance = 0.1;
 float robo_speed = 10.0;
@@ -149,7 +150,7 @@ int main(int argc, char **argv)
 
   pub = nh.advertise<robotiq_2f_msgs::GripperCmd>("/gripper/cmd", 1);
   wsgGripperMove = nh.serviceClient<wsg_50_common::Move>("wsg_50_driver/move");
-  wsgGripperConf = nh.serviceClient<std_srvs::Empty>("/wsg_50_driver/homing");
+  wsgGripperConf = nh.serviceClient<std_srvs::Empty>("wsg_50_driver/homing");
   ros::ServiceServer service = nh.advertiseService("grasp_cmd", graspObject);
   ROS_INFO("Ready to grasp object.");
 

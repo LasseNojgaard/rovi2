@@ -15,12 +15,14 @@ find_package(catkin REQUIRED COMPONENTS
   robotiq_2f_msgs
   message_generation
   wsg_50_common
+  pose_ros
 )
 ## Adding message files
-#add_message_files(
-#   FILES
+add_message_files(
+   FILES
 #   Grasp_cmd.msg
-# )
+    Object_pose.msg
+ )
 
 ## Generate services in the 'srv' folder
  add_service_files(
@@ -30,7 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 ## Generate added messages and services
-generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2)
+generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2 pose_ros)
 
 ###################################
 ## catkin specific configuration ##
@@ -44,7 +46,7 @@ generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rovi2
-  CATKIN_DEPENDS caros_universalrobot robotiq_2f_driver std_msgs wsg_50_driver robotiq_2f_msgs message_runtime wsg_50_common
+  CATKIN_DEPENDS caros_universalrobot robotiq_2f_driver std_msgs wsg_50_driver robotiq_2f_msgs message_runtime wsg_50_common pose_ros
 #  DEPENDS system_lib
 )
 
@@ -76,16 +78,19 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/rovi2_node.cpp)
+add_executable(grasp src/grasp_service.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
+target_link_libraries(grasp ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(grasp rovi2_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
@@ -127,19 +132,5 @@ include_directories(
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-#############
-## Testing ##
-#############
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_rovi2.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
-
-add_executable(grasp src/grasp_service.cpp)
-target_link_libraries(grasp ${catkin_LIBRARIES})
-add_dependencies(grasp rovi2_generate_messages_cpp)

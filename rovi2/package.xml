@@ -20,11 +20,13 @@
   <build_depend>wsg_50_common</build_depend>
   <build_depend>robotiq_2f_msgs</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>pose_ros</build_depend>
   <build_export_depend>caros_universalrobot</build_export_depend>
   <build_export_depend>robotiq_2f_driver</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>wsg_50_driver</build_export_depend>
   <build_export_depend>wsg_50_common</build_export_depend>
+  <build_export_depend>pose_ros</build_export_depend>
   <build_export_depend>robotiq_2f_msgs</build_export_depend>
   <exec_depend>caros_universalrobot</exec_depend>
   <exec_depend>robotiq_2f_driver</exec_depend>
@@ -33,6 +35,7 @@
   <exec_depend>wsg_50_common</exec_depend>
   <exec_depend>robotiq_2f_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
+  <exec_depend>pose_ros</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
