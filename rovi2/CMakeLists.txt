@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rovi2)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+ add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
+find_package(
+  catkin REQUIRED COMPONENTS
   caros_universalrobot
   robotiq_2f_driver
   std_msgs
@@ -16,24 +17,26 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   wsg_50_common
   pose_ros
+  caros_sensor_msgs
+  caros_teleoperation
 )
+
+
 ## Adding message files
 #add_message_files(
 #   FILES
 #   Grasp_cmd.msg
 #    Object_pose.msg
 # )
-
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
    Grasp_cmd.srv
    SBL_cmd.srv
  )
-
-
 ## Generate added messages and services
 generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2 pose_ros)
+
 
 ###################################
 ## catkin specific configuration ##
@@ -47,33 +50,31 @@ generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2 pose_ros)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rovi2
-  CATKIN_DEPENDS caros_universalrobot robotiq_2f_driver std_msgs wsg_50_driver robotiq_2f_msgs message_runtime wsg_50_common pose_ros
+  CATKIN_DEPENDS 
+	caros_universalrobot
+	robotiq_2f_driver 
+ 	std_msgs wsg_50_driver 
+ 	robotiq_2f_msgs
+ 	message_runtime 
+	wsg_50_common 
+	pose_ros 
+	caros_sensor_msgs
+	caros_teleoperation
+	caros_common_robwork_msgs
 #  DEPENDS system_lib
 )
-
-
 
 
 ###########
 ## Build ##
 ###########
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+
 )
-
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/rovi2.cpp
-# )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -87,82 +88,11 @@ add_executable(SBL src/SBLcollision.cpp)
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 target_link_libraries(grasp ${catkin_LIBRARIES})
+target_link_libraries(SBL ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(grasp rovi2_generate_messages_cpp)
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
-
-#############
-## Install ##
-#############
-
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-## Mark executables and/or libraries for installation
-# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
-
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
-
-# Used to resolve absolute path names
-SET(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Use c++11
-SET(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-
-# Set the RobWork root (edit in .bashrc if necessary)
-SET(RW_ROOT $ENV{RW_ROOT})
-
-# Verbose mode prints more info when doing make
-set(CMAKE_VERBOSE_MAKEFILE false)
-
-# Set build type to release
-SET(CMAKE_BUILD_TYPE Release)
-MESSAGE("-- Build type: " ${CMAKE_BUILD_TYPE})
-
-# Use RobWork
-SET(RobWork_DIR ${RW_ROOT}/cmake) 
-FIND_PACKAGE(RobWork REQUIRED)
-INCLUDE_DIRECTORIES( ${ROBWORK_INCLUDE_DIRS} )
-LINK_DIRECTORIES( ${ROBWORK_LIBRARY_DIRS} )
-
-# Add the source files to build
-SET(SrcFiles src/SBLcollision.cpp)
-
-# The shared library to build:
-ADD_EXECUTABLE(SBLpoc ${SrcFiles})
-TARGET_LINK_LIBRARIES(SBLpoc ${ROBWORK_LIBRARIES} ${catkin_LIBRARIES})
-
 add_dependencies(SBL rovi2_generate_messages_cpp)
-
-MESSAGE(${PROJECT_NAME} " done!")
 

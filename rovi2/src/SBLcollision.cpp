@@ -3,12 +3,17 @@
 // INCLUDES
 
 // RobWork
-#include <rw/rw.hpp>
-#include <rw/math/Q.hpp>
-#include <rw/loaders/WorkCellLoader.hpp>
-#include <rw/models/WorkCell.hpp>
-#include <rw/common.hpp>
-
+#include"ros/ros.h"
+//#include <rw/rw.hpp>
+//#include <rw/math/Q.hpp>
+//#include <rw/common.hpp>
+#include <caros/common.h>
+#include <caros/common_robwork.h>
+#include <caros/caros_node_service_interface.h>
+#include <caros/serial_device_si_proxy.h>
+#include <rw/kinematics/Kinematics.hpp>
+#include <rw/models.hpp>
+#include <rw/common/Ptr.hpp>
 #include <utility>
 
 #include <rwlibs/proximitystrategies/ProximityStrategyFactory.hpp>
@@ -26,8 +31,6 @@
 #include <rwlibs/proximitystrategies/ProximityStrategyYaobi.hpp>
 #include <rwlibs/pathplanners/sbl/SBLPlanner.hpp>
 #include <rw/models/TreeDevice.hpp>
-
-#include <fstream>
 #include <iostream>
 #include <time.h>
 
@@ -238,7 +241,7 @@ Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::P
 //----------
 // Main
 //---------
-int main()
+int main(int argc, char **argv)
 {
     // Define Workcell path and Robot name
     //string wcFile = "../Workcells/WRS-RobWork12DOG/WRS_v3v2.wc.xml"; //Our own workcell and own 12 degree robot
@@ -250,37 +253,13 @@ int main()
     string deviceAName = "UR10A";
     string deviceBName = "UR10B";
 
-    std::cout << "Trying to use workcell: " << wcFile << std::endl;
-    std::cout << "with device(s): " << deviceAName << " with device(s): " << deviceBName << std::endl;
-
-    // Load Workcell
-    WorkCell::Ptr workcell = rw::loaders::WorkCellLoader::Factory::load(wcFile);
-
-    // Load Robots
-    Device::Ptr deviceA = workcell->findDevice(deviceAName);
-    Device::Ptr deviceB = workcell->findDevice(deviceBName);
-
-    if (deviceA == NULL && deviceB == NULL)
-    {
-        std::cerr << "Device: " << deviceAName << " and device: " << deviceBName << " not found!" << std::endl;
-        return -1;
-    }
-    else if(deviceA != NULL && deviceB == NULL)
-    {
-        std::cerr << "Device: " << deviceAName << " found!" << std::endl;
-        std::cerr << "Device: " << deviceBName << " not found!" << std::endl;
-        return -1;
-    }
-    else if(deviceA == NULL && deviceB != NULL)
-    {
-        std::cerr << "Device: " << deviceAName << " not found!" << std::endl;
-        std::cerr << "Device: " << deviceBName << " found!" << std::endl;
-        return -1;
-    }
-    else
-    {
-        std::cerr << "Device: " << deviceAName << " and device: " << deviceBName << " found!" << std::endl;
-    }
+    ros::init(argc,argv,"SBL");
+    ros::NodeHandle n;
+    caros::SerialDeviceSIProxy sd_sipA(n, "caros_universalrobot");
+    caros::SerialDeviceSIProxy sd_sipB(n, "caros_universalrobot2");
+    rw::models::WorkCell::Ptr workcell=caros::getWorkCell();
+    rw::models::Device::Ptr deviceA =workcell->findDevice("UR10A");
+    rw::models::Device::Ptr deviceB=workcell->findDevice("UR10B");
     // Get the state of the workcell
     cout << "Getting state of workcell" << endl;
     State state = workcell->getDefaultState();
@@ -392,14 +371,6 @@ int main()
 
 
 
-
-    string date = "Thu";
-    ofstream somefile;
-    somefile.open(date.append(".txt"));
-
-    somefile<< "Test test \n";
-    somefile<< timeUsed << " , " << prunedPath.size();
-    somefile.close();
 
     cout << "Done" << endl;
 

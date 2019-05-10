@@ -36,6 +36,9 @@
   <exec_depend>robotiq_2f_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>pose_ros</exec_depend>
+  <depend>caros_sensor_msgs</depend>
+  <depend>caros_teleoperation</depend>
+<depend>caros_common_robwork_msgs</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
