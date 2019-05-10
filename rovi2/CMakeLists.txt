@@ -153,8 +153,5 @@ FIND_PACKAGE(RobWork REQUIRED)
 INCLUDE_DIRECTORIES( ${ROBWORK_INCLUDE_DIRS} )
 LINK_DIRECTORIES( ${ROBWORK_LIBRARY_DIRS} )
 
-
-add_dependencies(rovi2_generate_messages_cpp)
-
 MESSAGE(${PROJECT_NAME} " done!")
 
