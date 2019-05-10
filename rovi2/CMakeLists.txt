@@ -53,7 +53,8 @@ catkin_package(
   CATKIN_DEPENDS 
 	caros_universalrobot
 	robotiq_2f_driver 
- 	std_msgs wsg_50_driver 
+ 	std_msgs 
+	wsg_50_driver 
  	robotiq_2f_msgs
  	message_runtime 
 	wsg_50_common 

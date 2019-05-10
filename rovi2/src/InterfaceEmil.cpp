@@ -1,6 +1,8 @@
 #include "ros/ros.h"
 #include "pose_ros/Object_pose.h"
 #include "rovi2/Grasp_cmd.h"
+#include "includes/inversekin.h"
+
 
 #include <rw/math/Q.hpp>
 #include <string>
@@ -13,6 +15,7 @@ ros::ServiceClient SBL_client;
 
 float objectLocations[3][6];  // x, y, z, roll, pitch, yaw;
 bool objectRecived[3]={false,false,false};
+int foundObjects = 0;
 
 
 void visionInfo(pose_ros::Object_pose::Ptr pose)
@@ -29,8 +32,6 @@ void visionInfo(pose_ros::Object_pose::Ptr pose)
   }
 }
 
-
-
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "talker");
@@ -41,23 +42,37 @@ int main(int argc, char **argv)
   grasp_client = nh.serviceClient<grasp_service::Grasp_cmd>("grasp_cmd");
   SBL_client = nh.serviceClient</*indsæt service*/>(/*service command*/);
 
+  
+
   while (ros::ok())
   {
-    // get object pose
+    if(foundObjects < 2)
+    {
+      for (size_t i = 0; i < 3; i++){
+        if(objectRecived[i])
+        {
+          foundObjects++;
+        }
+      }
+    }
+    else
+    {
 
-    //calc inverse kinematic
+      //calc inverse kinematic
 
-    //find SBL path
+      //find SBL path
 
-    //grasp
+      //grasp
 
-    //Lift up
+      //Lift up
 
-    //calc inverse kinematic
+      //calc inverse kinematic
 
-    //find SBL path
+      //find SBL path
 
-    //release
+      //release
+
+    }
 
     ros::spinOnce();
   }
