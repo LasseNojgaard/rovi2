@@ -80,7 +80,6 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/rovi2_node.cpp)
 add_executable(grasp src/grasp_service.cpp)
-add_executable(SBL src/SBLcollision.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -154,9 +153,6 @@ SET(RobWork_DIR ${RW_ROOT}/cmake)
 FIND_PACKAGE(RobWork REQUIRED)
 INCLUDE_DIRECTORIES( ${ROBWORK_INCLUDE_DIRS} )
 LINK_DIRECTORIES( ${ROBWORK_LIBRARY_DIRS} )
-
-# Add the source files to build
-SET(SrcFiles src/SBLcollision.cpp)
 
 # The shared library to build:
 ADD_EXECUTABLE(SBLpoc ${SrcFiles})

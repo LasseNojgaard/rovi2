@@ -70,7 +70,7 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(DEPENDENCIES rovi2 )
+ generate_messages(DEPENDENCIES pose_ros)
 #   sensor_msgs
 # )
 
