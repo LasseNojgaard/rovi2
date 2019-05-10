@@ -66,8 +66,14 @@ clock_t timeStart;
 //--------------------
 // Functions
 
+void line()
+{
+  cout << "----------------------------------------------------------" << endl;
+}
+
 rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, CollisionDetector::Ptr aDetector, TreeDevice::Ptr aDeviceTree, State aState, double epsilon, WorkCell::Ptr aWorkcell)
 {
+  cout << "Beginning SBL" << endl;
   rw::trajectory::Path<Q> somePath;
   // Constraint
   rw::pathplanning::QConstraint::Ptr treeConstraint = rw::pathplanning::QConstraint::make(aDetector, aDeviceTree, aState);
@@ -89,9 +95,8 @@ rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, Collisi
 
   cout << "Making the trajectory from: " << endl;
   cout << pos << endl;
-  cout << inputConfiguration << endl;
 
-  cout << "Next configuration: " << endl;
+  cout << "To next configuration: " << endl;
   cout << outputConfiguration << endl;
 
   cout << "Reaching down the rabbithole" << endl;
@@ -106,7 +111,7 @@ rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, Collisi
     cout << "Path found" << endl;
   }
 
-  cout << "End" << endl;
+  cout << "End SBL" << endl;
 
   return somePath;
 }
@@ -153,34 +158,80 @@ rw::trajectory::Path<Q> pathPrune(rw::trajectory::Path<Q> aPath, double eps, Sta
   rw::trajectory::Path<Q> tempPath = aPath;
 
   size_t i = 0;
-  while (i < aPath.size()-2)
+  while (i < tempPath.size()-2)
   {
     bool collision = extBinarySearch(eps, tempPath[i], tempPath[i+2], theState, theDetector, theDevice);
-    cout << "Object:" << i << " and " << i+2 << "maybe in collision: " << collision << endl;
+    //cout << "Object:" << i << " and " << i+2 << "collision: " << collision << endl;
     if (collision == 0)
     {
-      aPath.erase(aPath.begin()+i+1);
+      tempPath.erase(tempPath.begin()+i+1);
       if (i>0)
       {
         i -= 1;
       }
-      else
-      {
-        i += 1;
-      }
+    }
+    else
+    {
+      i += 1;
     }
   }
 
-  return aPath;
+  return tempPath;
 }
 
-rw::trajectory::Path<Q> interpolate()
+rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps)
 {
+  cout << "Beginning interpolation" << endl;
   rw::trajectory::Path<Q> tempPath;
 
+  //cout << "first" << endl;
+  for (size_t i = 0; i < inputPath.size()-1; i++)
+  {
+    //cout << "second " << i << endl;
+    double dist = abs(inputPath[i].norm2()-inputPath[i+1].norm2());
+    //cout << "making amount; Distance: " << dist << endl;
+    double amount = ceil(dist*steps);
+    //cout << "making increment; Amount: " << amount << endl;
+    Q increment = (inputPath[i+1]-inputPath[i]) / amount;
+    //cout << "pushing back" << endl;
+    tempPath.push_back(inputPath[i]);
+    //cout << "from Q: " << inputPath[i] << endl << "to: " << inputPath[i+1] << endl;
+    for (size_t j = 1; j < amount; j++)
+    {
+      //cout << "third " << j << endl;
+      //cout << "Increment: " << increment*j << endl;
+      tempPath.push_back(inputPath[i]+j*increment);
+    }
 
-
+  }
+  //cout << "adding last" << endl;
+  tempPath.push_back(inputPath[inputPath.size()-1]);
+  cout << "Done interpolating" << endl;
   return tempPath;
+}
+
+Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::Ptr theDetector, State theState, int theSeed)
+{
+
+  Math::seed()
+  Q minQ = theDevice.getBounds().first();
+  Q maxQ = theDevice.getBounds().second();
+
+  bool inCollision = true;
+
+  while (inCollision)
+  {
+    Q tempQ = Math::ranQ(minQ, maxQ);
+
+    CollisionDetector::QueryResult data;
+
+    theDevice->setQ(tempQ, state);
+    inCollision = detector->inCollision(state, &data);
+    cout << "Conf. incollision: " << inCollision <<  endl;
+  }
+
+
+
 }
 
 
@@ -256,8 +307,6 @@ int main()
 
     //----------------------------
 
-
-
     Q positionBegin = deviceTree->getQ(state);
 
     Q endPointQ = Q(12);
@@ -277,38 +326,26 @@ int main()
     double timeUsed = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
 
     cout << "length of path: " << goodPath.size() << endl;
-    for(size_t i = 0 ; i < goodPath.size() ; i++)
-    {
+    //for(size_t i = 0 ; i < goodPath.size() ; i++)
+    //{
       //cout << goodPath[i] << endl;
-    }
+    //}
 
+    double epsi = 0.01;
     //--Path trimming
     timeStart = clock();
-    rw::trajectory::Path<Q> prunedPath = pathPrune(goodPath, anEpsilon, state, detector, deviceTree);
+    rw::trajectory::Path<Q> prunedPath = pathPrune(goodPath, epsi, state, detector, deviceTree);
     double timeUsedPrune = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
     cout << "length of path: " << prunedPath.size() << endl;
-    for (size_t i = 0; i < prunedPath.size(); i++)
-    {
+    //for (size_t i = 0; i < prunedPath.size(); i++)
+    //{
       //cout << prunedPath[i] << endl;
-    }
+    //}
 
-
-
-
-    cout << "Time used in seconds on SBL: " << timeUsed << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << goodPath.size() << endl;
-
-
-    cout << "Time used in seconds on pruning: " << timeUsedPrune << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << prunedPath.size() << endl;
 
     const std::vector<State> states = Models::getStatePath(*deviceTree, goodPath, state);
 
     const std::vector<State> states2 = Models::getStatePath(*deviceTree, prunedPath, state);
-
-
 
     PathLoader::storeVelocityTimedStatePath(
         *workcell, states, "ex-path-planning.rwplay");
@@ -316,50 +353,43 @@ int main()
     PathLoader::storeVelocityTimedStatePath(*workcell, states2, "ex-path-pruned-planning.rwplay");
         //--PathTesting
 
-
         //--Optimization
+    line();
+
+    int amountOfSteps = 100;
+    timeStart = clock();
+    rw::trajectory::Path<Q> interpolated = interpolate(prunedPath,amountOfSteps);
+    double timeUsedInterpolate = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
+    cout << "size of interpolated path: " << interpolated.size()<< endl;
+    line();
+    //for (size_t i = 0; i < interpolated.size(); i++) {
+      //cout << interpolated[i] << endl;
+    //}
+    const std::vector<State> states3 = Models::getStatePath(*deviceTree, interpolated, state);
+
+
+    PathLoader::storeVelocityTimedStatePath(*workcell, states3, "ex-path-prunedAndInterpolated-planning.rwplay");
+
+    cout << "Time used in seconds on SBL: " << timeUsed << endl;
+    cout << "Write out path: " << endl;
+    cout << "length of path: " << goodPath.size() << endl;
+
+    cout << "Time used in seconds on pruning: " << timeUsedPrune << endl;
+    cout << "Write out path: " << endl;
+    cout << "length of path: " << prunedPath.size() << endl;
+
+    cout << "Time used in seconds on interpolating: " << timeUsedInterpolate << endl;
+    cout << "Write out path: " << endl;
+    cout << "length of path: " << interpolated.size() << endl;
+
+    line();
+    cout << "Test!" << endl;
+    line();
 
 
 
-    cout << "-----------------------------------------------------------------" << endl;
-
-    Q testMin = {3, -1, -1, -1};
-    Q testMax = {3, 1, 1, 1};
-
-    Q test2Min = {3, -1, -1, -1};
-    Q test2Max = {3, 1, 1, 1};
-
-    Q testres = Math::ranQ(testMin, testMax);
-    Q test2res = Math::ranQ(test2Min, test2Max);
-
-    cout << "Position norm 2: " << positionBegin.norm2() << endl;
-
-    cout << "EndpointQ norm 2: " << endPointQ.norm2() << endl;
-
-    cout << "Difference in norm2: " << positionBegin.norm2()-endPointQ.norm2() << endl;
-
-    cout << "Position norm 2:  " << testres.norm2() << endl;
-
-    cout << "EndpointQ norm 2: " << test2res.norm2() << endl;
-
-    cout << "Difference in norm2: " << testres.norm2()-test2res.norm2() << endl;
-    cout << "Real difference: " << abs(testres.norm2()-test2res.norm2()) << endl;
-
-    //double testnorm2 = testres.norm2();
-    //double test2norm2 = test2res.norm2();
-    double separation = 100;
-    double distance = abs(testres.norm2()-test2res.norm2());
-
-    double factor = distance*separation;
-
-    Q increment = (testres-test2res)/factor;
 
 
-    cout << "Increment" << increment.norm2() << endl;
-
-    cout << "Difference " << (testres.norm2()-test2res.norm2())/increment.norm2() << endl;
-
-    cout << factor << endl;
 
 
 
@@ -376,7 +406,6 @@ int main()
     return 0;
 }
 
-
 // TODO ----------------------
 
 /*
@@ -385,8 +414,6 @@ int main()
     - Make 10 paths and use the shortest of these to do the moves.
     - Check the interpolation
 */
-
-
 
     /*
     Q tempQA = Math::ranQ(qMinA,qMaxA);
