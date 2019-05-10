@@ -28,7 +28,6 @@ find_package(catkin REQUIRED COMPONENTS
  add_service_files(
    FILES
    Grasp_cmd.srv
-   SBL_cmd.srv
  )
 
 
@@ -154,11 +153,8 @@ FIND_PACKAGE(RobWork REQUIRED)
 INCLUDE_DIRECTORIES( ${ROBWORK_INCLUDE_DIRS} )
 LINK_DIRECTORIES( ${ROBWORK_LIBRARY_DIRS} )
 
-# The shared library to build:
-ADD_EXECUTABLE(SBLpoc ${SrcFiles})
-TARGET_LINK_LIBRARIES(SBLpoc ${ROBWORK_LIBRARIES} ${catkin_LIBRARIES})
 
-add_dependencies(SBL rovi2_generate_messages_cpp)
+add_dependencies(rovi2_generate_messages_cpp)
 
 MESSAGE(${PROJECT_NAME} " done!")
 
