@@ -1,0 +1,14 @@
+float QA0
+float QA1
+float QA2
+float QA3
+float QA4
+float QA5
+float QB0
+float QB1
+float QB2
+float QB3
+float QB4
+float QB5
+---
+bool goalReached

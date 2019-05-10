@@ -18,16 +18,17 @@ find_package(catkin REQUIRED COMPONENTS
   pose_ros
 )
 ## Adding message files
-add_message_files(
-   FILES
+#add_message_files(
+#   FILES
 #   Grasp_cmd.msg
-    Object_pose.msg
- )
+#    Object_pose.msg
+# )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
    Grasp_cmd.srv
+   SBL_cmd.srv
  )
 
 
@@ -79,7 +80,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/rovi2_node.cpp)
 add_executable(grasp src/grasp_service.cpp)
-
+add_executable(SBL src/SBLcollision.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -132,5 +133,43 @@ add_dependencies(grasp rovi2_generate_messages_cpp)
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
+# Test CMake version
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
 
+# The name of the project
+PROJECT(SBLpoc)
+MESSAGE(${PROJECT_NAME} ":")
+
+# Used to resolve absolute path names
+SET(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Use c++11
+SET(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
+# Set the RobWork root (edit in .bashrc if necessary)
+SET(RW_ROOT $ENV{RW_ROOT})
+
+# Verbose mode prints more info when doing make
+set(CMAKE_VERBOSE_MAKEFILE false)
+
+# Set build type to release
+SET(CMAKE_BUILD_TYPE Release)
+MESSAGE("-- Build type: " ${CMAKE_BUILD_TYPE})
+
+# Use RobWork
+SET(RobWork_DIR ${RW_ROOT}/cmake) 
+FIND_PACKAGE(RobWork REQUIRED)
+INCLUDE_DIRECTORIES( ${ROBWORK_INCLUDE_DIRS} )
+LINK_DIRECTORIES( ${ROBWORK_LIBRARY_DIRS} )
+
+# Add the source files to build
+SET(SrcFiles src/SBLcollision.cpp)
+
+# The shared library to build:
+ADD_EXECUTABLE(SBLpoc ${SrcFiles})
+TARGET_LINK_LIBRARIES(SBLpoc ${ROBWORK_LIBRARIES} ${catkin_LIBRARIES})
+
+add dependencies(SBL rovi2_generate_messages_cpp)
+
+MESSAGE(${PROJECT_NAME} " done!")
 
