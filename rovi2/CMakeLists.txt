@@ -133,13 +133,6 @@ add_dependencies(grasp rovi2_generate_messages_cpp)
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-# Test CMake version
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
-
-# The name of the project
-PROJECT(SBLpoc)
-MESSAGE(${PROJECT_NAME} ":")
-
 # Used to resolve absolute path names
 SET(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -169,7 +162,7 @@ SET(SrcFiles src/SBLcollision.cpp)
 ADD_EXECUTABLE(SBLpoc ${SrcFiles})
 TARGET_LINK_LIBRARIES(SBLpoc ${ROBWORK_LIBRARIES} ${catkin_LIBRARIES})
 
-add dependencies(SBL rovi2_generate_messages_cpp)
+add_dependencies(SBL rovi2_generate_messages_cpp)
 
 MESSAGE(${PROJECT_NAME} " done!")
 
