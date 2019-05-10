@@ -209,7 +209,7 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
   cout << "Done interpolating" << endl;
   return tempPath;
 }
-
+/*
 Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::Ptr theDetector, State theState, int theSeed)
 {
 
@@ -232,7 +232,7 @@ Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::P
 
 
 
-}
+}*/
 
 
 //----------
