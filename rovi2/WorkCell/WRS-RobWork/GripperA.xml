@@ -1,0 +1,101 @@
+<Frame name="GripperABase" refframe="GripperARef">
+	<Pos>0 0 0</Pos>
+	<RPY>0 0 0</RPY>
+	<Drawable name="Base">
+		<Pos>0 -0.095 0</Pos>
+		<RPY>0 0 0</RPY>
+		<Polytope file="Tools/18181-01-2000"/>
+	</Drawable>
+</Frame>
+
+<Frame name="GripperARobotiqMount" refframe="GripperABase">
+	<Pos>0 -0.095 0</Pos>
+	<RPY>0 0 0</RPY>
+	<Drawable name="RobotiqMount">
+		<Pos>0 -0.007 0</Pos>
+		<RPY>180 0 -90</RPY>
+		<Polytope file="robotiq_v3/geometry/AGC-CPL-062-002"/>
+	</Drawable>
+</Frame>
+
+<Frame name="GripperARobotiq" refframe="GripperARobotiqMount">
+	<Pos>0 -0.0109 0</Pos>
+	<RPY>0 0 180</RPY>
+</Frame>
+
+ <ParallelDevice name="RobotiqA">
+<Include file="robotiq_v3/robotiq_distance_control.xml" />
+</ParallelDevice>
+
+<Frame name="SuctionCupsARef" refframe="GripperABase">
+	<Pos>0 -0.03625 0.04</Pos>
+	<RPY>0 0 0</RPY>
+</Frame>
+
+<TreeDevice name="SuctionCupsA">
+<Include file="SuctionCupCylinders.xml" />
+</TreeDevice>
+
+<Frame name="SwivelARef" refframe="GripperABase">
+	<Pos>0 -0.055 0</Pos>
+	<RPY>0 180 0</RPY>
+	<Drawable name="Mount">
+		<Pos>0 -0.040 0</Pos>
+		<RPY>0 180 0</RPY>
+		<Polytope file="Tools/swiwel_fixed"/>
+	</Drawable>
+</Frame>
+
+<SerialDevice name="SwivelA">
+<Frame name="Base" />
+<Joint name="Rotate" type="Revolute">
+	<Pos>0 0 0</Pos>
+	<RPY>0 0 0</RPY>
+	<Drawable name="Swivel">
+		<Pos>0 -0.040 0</Pos>
+		<RPY>0 180 0</RPY>
+		<Polytope file="Tools/swiwel"/>
+	</Drawable>
+</Joint>
+   <PosLimit refjoint="Rotate" min="-180" max="180" />
+   <VelLimit refjoint="Rotate" max="180" />
+   <AccLimit refjoint="Rotate" max="180" />
+
+</SerialDevice>
+
+<Frame name="SchunkMountA" refframe="SwivelA.Rotate">
+	<Pos>0 -0.05675 0.0775</Pos>
+	<RPY>180 0 0</RPY>
+	<Drawable name="Mount">
+		<Pos>0 -0.01675 -0.0775</Pos>
+		<RPY>180 180 0</RPY>
+		<Polytope file="Tools/schunk_mount"/>
+	</Drawable>
+</Frame>
+
+<SerialDevice name="SchunkARotate">
+<Include file="Schunk-RC-1216-H/Schunk-RC-1216-H-Rotate.xml" />
+</SerialDevice>
+<Frame name="SchunkARotateEnd" />
+
+<Frame name="SchunkAGraspRef" refframe="SchunkARotate.TCP" />
+
+<TreeDevice name="SchunkAGrasp">
+<Include file="Schunk-RC-1216-H/Schunk-RC-1216-H-Grasp.xml" />
+</TreeDevice>
+
+	<Drawable name="FingerAA" refframe="SchunkAGrasp.TCPA">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 0</RPY>
+		<Polytope file="Fingers/18181-01-1002-01"/>
+	</Drawable>
+	<Drawable name="FingerAB" refframe="SchunkAGrasp.TCPB">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 0</RPY>
+		<Polytope file="Fingers/18181-01-1002-01"/>
+	</Drawable>
+	<Drawable name="FingerAC" refframe="SchunkAGrasp.TCPC">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 0</RPY>
+		<Polytope file="Fingers/18181-01-1002-01"/>
+	</Drawable>

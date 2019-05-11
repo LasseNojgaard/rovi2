@@ -1,0 +1,58 @@
+	<Frame name="Base">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 -90</RPY>
+	</Frame>
+		
+	<Joint name="FingerA" refframe="Base" type="Prismatic">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 0</RPY>
+	</Joint>
+		
+	<Joint name="FingerB" refframe="Base" type="Prismatic">
+		<Pos>0 0 0</Pos>
+		<RPY>0 120 0</RPY>
+		<Depend on="FingerA" gain="1" offset="0" />
+	</Joint>
+		
+	<Joint name="FingerC" refframe="Base" type="Prismatic">
+		<Pos>0 0 0</Pos>
+		<RPY>0 -120 0</RPY>
+		<Depend on="FingerA" gain="1" offset="0" />
+	</Joint>
+
+	<Frame name="TCPA" refframe="FingerA" type="EndEffector">
+		<Pos>0 -0.053759 0.029</Pos>
+		<RPY>0 0 0</RPY>
+	</Frame>
+	<Frame name="TCPB" refframe="FingerB" type="EndEffector">
+		<Pos>0 -0.053759 0.029</Pos>
+		<RPY>0 0 0</RPY>
+	</Frame>
+	<Frame name="TCPC" refframe="FingerC" type="EndEffector">
+		<Pos>0 -0.053759 0.029</Pos>
+		<RPY>0 0 0</RPY>
+	</Frame>
+	
+	<PosLimit refjoint="FingerA" min="0" max="0.003" />
+	<VelLimit refjoint="FingerA" max="120" />
+	<AccLimit refjoint="FingerA" max="120" />
+
+	<Drawable name="FingerAGeo" refframe="FingerA">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 180</RPY>
+		<Polytope file="Geometry/fingerA.obj" />
+	</Drawable>
+
+	<Drawable name="FingerBGeo" refframe="FingerB">
+		<Pos>0 0 0</Pos>
+		<RPY>0 -120 180</RPY>
+		<Polytope file="Geometry/fingerB.obj" />
+	</Drawable>
+
+	<Drawable name="FingerCGeo" refframe="FingerC">
+		<Pos>0 0 0</Pos>
+		<RPY>0 120 180</RPY>
+		<Polytope file="Geometry/fingerC.obj" />
+	</Drawable>
+
+	<Q name="Home">0</Q>

@@ -212,6 +212,68 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
 
 bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 {
+  currentpos = deviceTree->getQ(state);
+    deviceTree->setQ(currentpos, state);
+    cout << "currentposition: " << currentpos << endl;
+    Q robA = {6, -0.022, -2.746, 0.798, -2.042, -1.574, 1.2};
+    Q robB = {6, -0.022, -2.746, 0.798, -2.042, -1.574, 1.2};
+
+    Vector3D<> TA(-0.0965843, -0.174872, 0.981973);
+    Rotation3D<> rotA(0.383167, -0.768162, -0.512942, 0.0679667, -0.530372, 0.845036, -0.921175, -0.358653, -0.151012);
+    RPY<> RA(0.78, 0.2, 0.45);
+    Vector3D<> TB(-0.0965843, -0.174872, 0.981973);
+    Rotation3D<> rotB(0.383167, -0.768162, -0.512942, 0.0679667, -0.530372, 0.845036, -0.921175, -0.358653, -0.151012);
+
+    RPY<> RB(0.78, 0.2, 0.45);
+    Transform3D<> poseA(TA, rotA);
+    Transform3D<> poseB(TB, rotB);
+
+    double pruneepsi = 0.01;
+    double SBLepsi = 0.01;
+
+//    rw::math::Transform3D<> goalPositionA = relatePosetoBase(workcell, deviceA , poseA, state);
+  //  rw::math::Transform3D<> goalPositionB = relatePosetoBase(workcell, deviceB , poseB, state);
+    Q haps = Q(12);
+    cout << "default: " << haps << endl;
+    Q goalpos = findGoalConfig(deviceA, deviceB, state, poseA, poseB);
+    cout << "Goalposition: " << goalpos << endl;
+    rw::trajectory::Path<Q> agoodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
+
+    if (agoodPath.size()>0)
+    {
+      rw::trajectory::Path<Q> aprunedPath = pathPrune(agoodPath, pruneepsi, state, detector, deviceTree);
+      rw::trajectory::Path<Q> ainterpolated = interpolate(aprunedPath,amountOfSteps);
+
+
+    Q Qa = Q(6);
+    Q Qb = Q(6);
+    for (size_t i = 0; i < ainterpolated.size(); i++)
+    {
+      for (size_t j = 0; j < 6; j++)
+      {
+        Qa[j] = ainterpolated[i][j];
+      }
+      for (size_t j = 6; j < 12; j++)
+      {
+        Qb[j] = ainterpolated[i][j];
+      }
+      //sd_sipA.movePtp(Qa);
+      //sd_sipB.movePtp(Qb);
+
+    }
+    for (size_t i = 0; i < Qa.size(); i++)
+    {
+      cout << "Qa" << i << " "<<Qa[i] << endl;
+    }
+
+    for (size_t i = 0; i < Qb.size(); i++)
+    {
+      cout << "Qb" << i << " "<<Qb[i] << endl;
+    }
+    cout << "Goalposition: " << goalpos << endl;
+    currentpos = goalpos;
+    }
+  /*
     Math::Vector3D<> TA(req.tAx, req.tAy, req.tAz);
     Math::Vector3D<> RA(req.rAx, req.rAy, req.rAz);
     Math::Vector3D<> TB(req.tBx, req.tBy, req.tBz);
@@ -244,7 +306,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
       sd_sipB.movePtp(Qb);
     }
     currentpos = goalpos;
-
+*/
     return true;
 }
 

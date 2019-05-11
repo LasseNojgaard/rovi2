@@ -1,0 +1,26 @@
+	<Frame name="Base" />
+	
+	<Joint name="Rotate" type="Revolute">
+		<Pos>0 0 0</Pos>
+		<RPY>0 0 -90</RPY>
+	</Joint>
+
+	<Frame name="TCP" refframe="Rotate" type="EndEffector" />
+
+	<PosLimit refjoint="Rotate" min="-360" max="360" />
+	<VelLimit refjoint="Rotate" max="120" />
+	<AccLimit refjoint="Rotate" max="120" />
+
+	<Drawable name="BaseGeo" refframe="Base">
+		<Pos>0.0001 -0.11342 0.0975</Pos>
+		<RPY>0 0 0</RPY>
+		<Polytope file="Geometry/festo_fixed.obj" />
+	</Drawable>
+
+	<Drawable name="RotationGeo" refframe="Rotate">
+		<Pos>0.0001 -0.0975 -0.11342</Pos>
+		<RPY>0 0 90</RPY>
+		<Polytope file="Geometry/festo_rotating.obj" />
+	</Drawable>
+
+	<Q name="Home">0</Q>

@@ -1,0 +1,84 @@
+<Frame name="Base">
+	<Pos>0 0 0</Pos>
+	<RPY>0 0 0</RPY>
+	<Drawable name="CylinderConnections">
+		<Pos>0 0 0</Pos>
+		<RPY>0 90 0</RPY>
+		<Polytope file="Tools/suction_mount"/>
+	</Drawable>
+</Frame>
+
+<Frame name="SmallCylinderBase" refframe="Base">
+	<Pos>-0.015 -0.15175 0.03</Pos>
+	<RPY>0 0 90</RPY>
+	<Drawable name="Cylinder">
+		<Pos>0 0 0</Pos>
+		<RPY>-90 0 0</RPY>
+		<Polytope file="Tools/cylinder"/>
+	</Drawable>
+	<Drawable name="Connectors">
+		<Pos>0.015 -0.03 -0.15175</Pos>
+		<RPY>-90 0 -90</RPY>
+		<Polytope file="Tools/cylinder_connectors2"/>
+	</Drawable>
+</Frame>
+<Joint name="SmallCylinder" type="Prismatic">
+	<Pos>0 0 0</Pos>
+	<RPY>0 0 0</RPY>
+	<Drawable name="Piston">
+		<Pos>0 0 0</Pos>
+		<RPY>-90 0 0</RPY>
+		<Polytope file="Tools/cylinder_piston"/>
+	</Drawable>
+	<Drawable name="SuctionCupGeo">
+		<Pos>0.015 -0.03 -0.15175</Pos>
+		<RPY>-90 0 -90</RPY>
+		<Polytope file="Tools/suction_small"/>
+	</Drawable>
+</Joint>
+   <PosLimit refjoint="SmallCylinder" min="0" max="0.06" />
+   <VelLimit refjoint="SmallCylinder" max="1" />
+   <AccLimit refjoint="SmallCylinder" max="1" />
+<Frame name="SmallCylinderTCP" type="EndEffector">
+	<Pos>0 0.025 0.0175</Pos>
+	<RPY>0 0 0</RPY>
+</Frame>
+
+
+<Frame name="BigCylinderBase" refframe="Base">
+	<Pos>0.015 -0.15175 0.03</Pos>
+	<RPY>0 0 90</RPY>
+	<Drawable name="Cylinder">
+		<Pos>0 0 0</Pos>
+		<RPY>-90 0 0</RPY>
+		<Polytope file="Tools/cylinder"/>
+	</Drawable>
+	<Drawable name="Connectors">
+		<Pos>-0.015 -0.03 -0.15175</Pos>
+		<RPY>-90 0 -90</RPY>
+		<Polytope file="Tools/cylinder_connectors1"/>
+	</Drawable>
+</Frame>
+<Joint name="BigCylinder" type="Prismatic">
+	<Pos>0 0 0</Pos>
+	<RPY>0 0 0</RPY>
+	<Drawable name="Piston">
+		<Pos>0 0 0</Pos>
+		<RPY>-90 0 0</RPY>
+		<Polytope file="Tools/cylinder_piston"/>
+	</Drawable>
+	<Drawable name="SuctionCupGeo">
+		<Pos>-0.015 -0.03 -0.15175</Pos>
+		<RPY>-90 0 -90</RPY>
+		<Polytope file="Tools/suction_large"/>
+	</Drawable>
+</Joint>
+   <PosLimit refjoint="BigCylinder" min="0" max="0.06" />
+   <VelLimit refjoint="BigCylinder" max="1" />
+   <AccLimit refjoint="BigCylinder" max="1" />
+<Frame name="BigCylinderTCP" type="EndEffector">
+	<Pos>0 0.025 0.0225</Pos>
+	<RPY>0 0 0</RPY>
+</Frame>
+
+  <Q name="Home">0 0</Q>
