@@ -2,11 +2,11 @@
 #include "pose_ros/Object_pose.h"
 #include "rovi2/Grasp_cmd.h"
 
-//#include "rovi2/src/SBLcollision.cpp"
+#include "rovi2/src/SBLcollision.cpp"
 #include <string>
 ros::Subscriber visionSub;
 ros::ServiceClient grasp_client;
-//ros::ServiceClient SBL_client;
+ros::ServiceClient SBL_client;
 
 float objectLocations[2][6];  // x, y, z, roll, pitch, yaw;
 int foundObjects = 0;
@@ -55,11 +55,10 @@ int main(int argc, char **argv)
   ROS_INFO("Started Code");
   visionSub     = nh.subscribe("object_pose", 3, visionInfo);
   grasp_client  = nh.serviceClient<rovi2::Grasp_cmd>("grasp_cmd");
-//  SBL_client    = nh.serviceClient<SBLcollision::SBL_cmd>("SBL_cmd");
+  SBL_client    = nh.serviceClient<SBLcollision::SBL_cmd>("SBL_cmd");
 
   while (ros::ok()){
     if(foundObjects > 1){
-        /*
             SBL_client.request.tAx = objectLocations[0][0];
             SBL_client.request.tAy = objectLocations[0][1];
             SBL_client.request.tAz = objectLocations[0][2];
@@ -74,17 +73,7 @@ int main(int argc, char **argv)
             SBL_client.request.rBz = objectLocations[1][5];
             SBL_client.request.goal = false;
             foundObjects =0;
-
-            rosInfo = "PoseA: "
-              for (size_t i = 0; i < 5; i++) {
-                  rosInfo += objectLocations[0][j];
-              }
-              rosInfo+= "PoseB: ")
-                for (size_t j = 0; j < 5; j++) {
-                    rosInfo += objectLocations[1][j];
-                }
-              ROS_INFO(rosInfo);
-          }
+      
 
         if(SBLcollision.call(SBL_client))
           {
@@ -172,7 +161,7 @@ int main(int argc, char **argv)
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
         grasp_service.call(grasp_client);
-          */
+
         foundObjects = 0;
         objectRecived[0]=false;
         objectRecived[1]=false;
