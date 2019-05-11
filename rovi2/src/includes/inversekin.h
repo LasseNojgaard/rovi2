@@ -38,13 +38,15 @@ rw::math::Transform3D<> accountForGripper(rw::math::Transform3D<> pose)
   translation[z]+=tcpdisp;
   return rw::math::Transform3D<>(translation,pose.R());
 }
-std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::Device::Ptr device_1,rw::models::Device::Ptr device_2, rw::kinematics::State state, rw::math::Transform3D<> pose1, rw::math::Transform3D<> pose2,bool &tried) {
+std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::WorkCell::Ptr wc,rw::models::Device::Ptr device_1,rw::models::Device::Ptr device_2, rw::kinematics::State state, rw::math::Transform3D<> pose1, rw::math::Transform3D<> pose2,bool &tried) {
 
 
     std::vector<std::vector<rw::math::Q>> result;
+    pose1=relatePoseToTCP(wc, device_1,pose1);
     pose1=accountForGripper(pose1);
     rw::invkin::IterativeIK::Ptr solver=rw::invkin::JacobianIKSolver::makeDefault(device_1,state);
     std::vector<rw::math::Q> iter1= solver->solve(pose1,state);
+    pose2=relatePoseToTCP(wc, device_2,pose2);
     pose2=accountForGripper(pose2);
     rw::invkin::IterativeIK::Ptr solver2=rw::invkin::JacobianIKSolver::makeDefault(device_2,state);
     std::vector<rw::math::Q> iter2 = solver2->solve(pose2,state);
