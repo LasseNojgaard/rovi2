@@ -47,6 +47,12 @@ using namespace Eigen;
 
 typedef PointNormal PointT;
 typedef Histogram<153> FeatureT;
+int PLANEIter = 200;
+
+float nameExt=7;
+PointCloud<PointNormal>::Ptr filter_scene(PointCloud<PointT>::Ptr scene);
+void align_scene(PointCloud<PointT>::Ptr scene);
+void downscale(PointCloud<PointT>::Ptr scene);
 
 void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosInput)
 {   
@@ -60,14 +66,21 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     //viewer->spin();
     ROS_INFO("SAVING IMAGE");
 
-    //pcl::io::savePCDFileASCII ("scene.pcd", scene);
+    pcl::io::savePCDFileASCII ("scene"+ std::to_string(nameExt) +".pcd", *scene);
+    PointCloud<PointT>::Ptr scene1(new PointCloud<PointT>);
+    
+    
+    align_scene(scene);
+    downscale(scene);
+    scene1 = filter_scene(scene);
     // Show
     ROS_INFO("Show1 section");
     {
         PCLVisualizer v("Scene Before global alignment");
-        v.addPointCloud<PointT>(scene, PointCloudColorHandlerCustom<PointT>(scene, 255, 0, 0),"scene");
+        v.addPointCloud<PointT>(scene1, PointCloudColorHandlerCustom<PointT>(scene1, 255, 0, 0),"scene");
         v.spin();
     }
+    nameExt=nameExt+1;
     
 }
 
@@ -84,4 +97,67 @@ int main(int argc, char**argv) {
     
         
     return 0;
+}
+PointCloud<PointNormal>::Ptr filter_scene(PointCloud<PointT>::Ptr scene) {
+    PointT newpoint;
+    PointCloud<PointT>::Ptr sceneFiltered(new PointCloud<PointT>);
+    for(pcl::PointCloud<PointT>::iterator i = scene->begin(); i<scene->end(); i++){
+        newpoint.x = i->x;
+        newpoint.y = i->y;
+        newpoint.z = i->z;
+        if(newpoint.x<1 && newpoint.y<1 && newpoint.z<1) {
+            sceneFiltered->push_back(newpoint);
+        }
+    }
+    
+    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
+    // Create the segmentation object
+    pcl::SACSegmentation<PointT> seg;
+    // Optional
+    seg.setOptimizeCoefficients (true);
+    // Mandatory
+    seg.setModelType (pcl::SACMODEL_PLANE);
+    seg.setMethodType (pcl::SAC_RANSAC);
+    seg.setMaxIterations (PLANEIter);
+    seg.setDistanceThreshold (0.013);
+
+
+    // Create the filtering object
+    pcl::ExtractIndices<PointT> extract;
+
+    // Segment the largest planar component from the remaining cloud
+    seg.setInputCloud (sceneFiltered);
+    seg.segment (*inliers, *coefficients);
+    std::cout << "Inliers: " << inliers->indices.size () << std::endl;
+    if (inliers->indices.size () == 0)
+    {
+      std::cerr << "Could not estimate a planar model for the given dataset." << std::endl;
+    }
+
+
+    // Extract the inliers
+    extract.setInputCloud(sceneFiltered);
+    extract.setIndices(inliers);
+    extract.setNegative(true);
+    extract.filter(*sceneFiltered);
+    return sceneFiltered;
+}
+
+void align_scene(PointCloud<PointT>::Ptr scene) {
+    Eigen::Affine3f moveToTable = Eigen::Affine3f::Identity();
+
+    moveToTable.translation() << -0.04, 0.48, -0.46;
+
+    moveToTable.rotate (Eigen::AngleAxisf (0.994838, Eigen::Vector3f::UnitX()));
+    moveToTable.rotate (Eigen::AngleAxisf (3.14159, Eigen::Vector3f::UnitZ()));
+
+    pcl::transformPointCloud (*scene, *scene, moveToTable);
+}
+
+void downscale(PointCloud<PointT>::Ptr cloud) {
+    pcl::VoxelGrid<PointT> sor;
+    sor.setInputCloud (cloud);
+    sor.setLeafSize (0.006f, 0.006f, 0.006f);
+    sor.filter (*cloud);
 }

@@ -35,6 +35,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
+#include "pose_ros/Object_pose.h"
 
 using namespace std;
 using namespace pcl;
@@ -48,7 +49,7 @@ using namespace Eigen;
 typedef PointNormal PointT;
 typedef Histogram<153> FeatureT;
 
-int RANSACIter = 5000;
+int RANSACIter = 4000;
 int PLANEIter = 200;
 float thressqGlobal = 0.01;
 //float radiusSearch=0.05;//30;
@@ -65,6 +66,9 @@ float bestInliers=0;
 float bestRMSEForIn=0;
 float bestInliersForIn=0;
 
+ros::Publisher chatter_pub;
+
+
 void nearest_feature(const FeatureT& query, const PointCloud<FeatureT>& target, int &idx, float &distsq);
 Matrix4f global_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>::Ptr sceneObj, int kSearch, float radiusSearch);
 Matrix4f local_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>::Ptr sceneObj);
@@ -80,6 +84,7 @@ vector<float> get_Theta(Matrix4f transform);
 
 vector<string> objects;
 
+
 int objectIterator=0;
 
 Eigen::Vector4f centroid;
@@ -90,6 +95,8 @@ Matrix4f poseGrab;
 void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosInput)
 {   
 	ROS_INFO("In Callback");
+    ros::NodeHandle n;
+    ros::Publisher chatter_pub = n.advertise<pose_ros::Object_pose>("object_pose", 2);
     PointCloud<PointT>::Ptr scene(new PointCloud<PointT>);
     ROS_INFO("Convert section");
     pcl::PCLPointCloud2 pcl_pc2;
@@ -109,7 +116,7 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
 
     align_scene(scene);
 
-    if(objectIterator==2) {
+    if(objectIterator==1) {
         align_object_grab(object,grab,true);
     }
     
@@ -117,24 +124,24 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
         align_object_grab(object,grab,false);
     }
 
+
+    scene = filter_scene(scene);
+
     downscale(scene);
 
     downscale(object);
 
     downscale(grab);
 
-    scene = filter_scene(scene);
+    
 
     PointCloud<PointNormal>::Ptr object_aligned_global(new PointCloud<PointNormal>);
     PointCloud<PointNormal>::Ptr object_aligned_local(new PointCloud<PointNormal>);
 
-    Matrix4f poseGlobal, poseLocal;
-    if(objectIterator==1) {
-        poseGlobal=global_allignment(object, scene,12, 0.03);    
-    }
-    else{
-        poseGlobal=global_allignment(object, scene,16, 0.05);
-    }
+    Matrix4f poseGlobal, poseLocal, totalPose;
+
+    poseGlobal=global_allignment(object, scene,16, 0.05);
+    
 
     pcl::transformPointCloud (*object, *object_aligned_global, poseGlobal);
     pcl::transformPointCloud (*grab, *grab, poseGlobal);
@@ -147,20 +154,30 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     pcl::transformPointCloud (*grab, *grab, poseGrab);
     pcl::compute3DCentroid (*grab, centroid);
 
-    if(objectIterator==2) {
+    totalPose = poseGlobal+poseLocal+poseGrab;
+    std::vector<float> angles = get_Theta(totalPose);
+
+    pose_ros::Object_pose msg;
+    msg.ID = objectIterator;
+    msg.x = centroid[0];
+    msg.y = centroid[1];
+    msg.z = centroid[2];
+    msg.roll=angles[0];
+    msg.pitch=angles[1];
+    msg.yaw=angles[2];
+
+    if(objectIterator==1) {
         objectIterator=0;
     }
     else {
         objectIterator++;
     }
-    
 }
 
 
 int main(int argc, char**argv) {
 
     objects.push_back("/home/student/Desktop/squarePCDV3.pcd");
-    objects.push_back("/home/student/Desktop/circlePCD.pcd");
     objects.push_back("/home/student/Desktop/trianglePCD.pcd"); 
     ros::init(argc, argv, "Vo3D");
     ros::NodeHandle nh;
@@ -500,7 +517,7 @@ void align_object_grab(PointCloud<PointT>::Ptr object, PointCloud<PointT>::Ptr g
 void align_scene(PointCloud<PointT>::Ptr scene) {
     Eigen::Affine3f moveToTable = Eigen::Affine3f::Identity();
 
-    moveToTable.translation() << 0, 0.48, -0.46;
+    moveToTable.translation() << -0.04, 0.48, -0.46;
 
     moveToTable.rotate (Eigen::AngleAxisf (0.994838, Eigen::Vector3f::UnitX()));
     moveToTable.rotate (Eigen::AngleAxisf (3.14159, Eigen::Vector3f::UnitZ()));

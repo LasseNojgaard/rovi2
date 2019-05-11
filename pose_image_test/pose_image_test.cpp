@@ -114,13 +114,13 @@ int main(int argc, char**argv) {
     }
 
    
+    scene = filter_scene(scene);
     downscale(scene);
 
     downscale(object);
 
     downscale(grab);
 
-    scene = filter_scene(scene);
 
     {
         PCLVisualizer v("After transform");
@@ -340,7 +340,7 @@ Matrix4f global_allignment(PointCloud<PointT>::Ptr object, PointCloud<PointT>::P
             const float penaltyi = outlier_rate;
             vector<float> angles = get_Theta(T);
             // Update result
-            if(penaltyi < penalty && abs(angles[0])<0.174533&&abs(angles[2])<0.174533) {
+            if(penaltyi < penalty && abs(angles[0])<0.139626&&abs(angles[2])<0.139626) {
                 //cout << "\t--> Got a new model with " << inliers << " inliers!" << endl;
                 penalty = penaltyi;
                 pose = T;
@@ -632,7 +632,7 @@ void align_object_grab(PointCloud<PointT>::Ptr object, PointCloud<PointT>::Ptr g
 void align_scene(PointCloud<PointT>::Ptr scene) {
     Eigen::Affine3f moveToTable = Eigen::Affine3f::Identity();
 
-    moveToTable.translation() << 0, 0.48, -0.46;
+    moveToTable.translation() << -0.04, 0.48, -0.46;
 
     moveToTable.rotate (Eigen::AngleAxisf (0.994838, Eigen::Vector3f::UnitX()));
     moveToTable.rotate (Eigen::AngleAxisf (3.14159, Eigen::Vector3f::UnitZ()));
