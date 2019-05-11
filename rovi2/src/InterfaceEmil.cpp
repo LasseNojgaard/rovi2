@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 
   while (ros::ok()){
     if(foundObjects > 1){
-      /*
+        /*
             SBL_client.request.tAx = objectLocations[0][0];
             SBL_client.request.tAy = objectLocations[0][1];
             SBL_client.request.tAz = objectLocations[0][2];
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
         grasp_service.call(grasp_client);
-        */
+          */
         foundObjects = 0;
         objectRecived[0]=false;
         objectRecived[1]=false;
