@@ -67,7 +67,7 @@ void align_scene(PointCloud<PointT>::Ptr scene);
 void downscale(PointCloud<PointT>::Ptr scene);
 
 std::ofstream outfile;
-string filename= "FinalTestLine.csv";
+string filename= "FinalTestClose.csv";
 
 int main(int argc, char**argv) {
 
@@ -81,9 +81,9 @@ int main(int argc, char**argv) {
         outfile << "RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total" << endl;
         outfile.close();
         
-        for(int RANSACIt=std::stoi(argv[2]); RANSACIt<=6000; RANSACIt=RANSACIt+2000) {
+        for(int RANSACIt=std::stoi(argv[2]); RANSACIt<=2000; RANSACIt=RANSACIt+2000) {
             RANSACIter=RANSACIt;
-            for(int sceneNr=std::stoi(argv[1]); sceneNr<=5;sceneNr++) {
+            for(int sceneNr=std::stoi(argv[1]); sceneNr<=8;sceneNr++) {
                 // Load
                 cout << "RANSAC: "<< RANSACIt<< " sceneNr: " << sceneNr << endl;
                 outfile.open(std::to_string(objectIterator)+filename, std::ios_base::app);
@@ -95,7 +95,7 @@ int main(int argc, char**argv) {
                 PointCloud<PointT>::Ptr grab(new PointCloud<PointT>);
               
                 loadPCDFile(objects[objectNr], *object);
-                loadPCDFile("/home/student/Desktop/LINE/scene"+std::to_string(sceneNr)+".pcd", *scene);
+                loadPCDFile("/home/student/Desktop/CLOSE/scene"+std::to_string(sceneNr)+".pcd", *scene);
                 loadPCDFile("/home/student/Desktop/grab.pcd", *grab);
                 pcl::removeNaNFromPointCloud(*scene, *scene, indices);
                 clock_t beginTotal = clock();
