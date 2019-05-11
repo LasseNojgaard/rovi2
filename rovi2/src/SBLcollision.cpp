@@ -310,28 +310,6 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     return true;
 }
 
-/*
-Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::Ptr theDetector, State theState, int theSeed)
-{
-
-  Math::seed()
-  Q minQ = theDevice.getBounds().first();
-  Q maxQ = theDevice.getBounds().second();
-
-  bool inCollision = true;
-
-  while (inCollision)
-  {
-    Q tempQ = Math::ranQ(minQ, maxQ);
-
-    CollisionDetector::QueryResult data;
-
-    theDevice->setQ(tempQ, state);
-    inCollision = detector->inCollision(state, &data);
-    cout << "Conf. incollision: " << inCollision <<  endl;
-  }
-
-}*/
 
 Q Qa = Q(6);
 Q Qb = Q(6);
