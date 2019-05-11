@@ -7,14 +7,14 @@
 #include <rw/math/EAA.hpp>
 #include <rw/models/Device.hpp>
 #include <rw/models/WorkCell.hpp>
-#include <rw/loaders/WorkCellLoader.hpp>
 #include <rw/kinematics.hpp>
 #include <rw/rw.hpp>
 #include <rw/invkin/JacobianIKSolver.hpp>
-#include <rwlibs/pathplanners/rrt/RRTPlanner.hpp>
-#include <rwlibs/pathplanners/rrt/RRTQToQPlanner.hpp>
-#include <rwlibs/proximitystrategies/ProximityStrategyFactory.hpp>
-#include <fstream>
+
+#define z 2
+#define qlength 12
+#define tcpdisp 0.25
+
 
 void findBestSolution(rw::math::Q current1, rw::math::Q current2,std::vector<rw::math::Q> iter1,std::vector<rw::math::Q> iter2, rw::math::Q &result){
     int leastScore=0;
@@ -30,11 +30,18 @@ rw::math::Transform3D<> relatePosetoBase(rw::models::WorkCell::Ptr wc, rw::model
     rw::math::Transform3D<> table2base= table->fTf(base,state);
     return pose*table2base;
 }
+rw::math::Transform3D<> accountForGripper(rw::math::Transform3D pose){
+  rw::math::Vector3D translation=pose.P();
+  translation[z]+=tcpdisp
+  return rw::math::Transform3D<>(translation,pose.R())
+}
 rw::math::Q findGoalConfig(rw::models::Device::Ptr device_1,rw::models::Device::Ptr device_2, rw::kinematics::State state, rw::math::Transform3D<> pose1, rw::math::Transform3D<> pose2,bool tried=false) {
 
-    rw::math::Q result(12);
+    rw::math::Q result(qlength);
+    pose1=accountForGripper(pose1);
     rw::invkin::IterativeIK::Ptr solver=rw::invkin::JacobianIKSolver::makeDefault(device_1,state);
     std::vector<rw::math::Q> iter1= solver->solve(pose1,state);
+    pose2=accountForGripper(pose2)
     rw::invkin::IterativeIK::Ptr solver2=rw::invkin::JacobianIKSolver::makeDefault(device_2,state);
     std::vector<rw::math::Q> iter2 = solver2->solve(pose2,state);
 
