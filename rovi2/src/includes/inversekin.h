@@ -16,13 +16,13 @@
 #define tcpdisp 0.25
 
 
-void findBestSolution(rw::math::Q current1, rw::math::Q current2,std::vector<rw::math::Q> iter1,std::vector<rw::math::Q> iter2, rw::math::Q &result){
-    int leastScore=0;
+rw::math::Q createQ12(std::vector<rw::math::Q> iter1;,std::vector<rw::math::Q> iter2, int index1, int index2){
+    rw::math::Q result;
     for(int i=0;i<result.size()/2;i++) {
-        result[i] = iter1[leastScore][i];
-        result[i + result.size()/2 - 1] = iter2[leastScore][i];
+        result[i] = iter1[index1][i];
+        result[i + result.size()/2 - 1] = iter2[index2][i];
     }
-
+    return result
 }
 rw::math::Transform3D<> relatePosetoBase(rw::models::WorkCell::Ptr wc, rw::models::Device::Ptr device ,rw::math::Transform3D<> pose, rw::kinematics::State state){
     rw::kinematics::Frame* table=wc->findFrame("TopPlate");
@@ -35,9 +35,9 @@ rw::math::Transform3D<> accountForGripper(rw::math::Transform3D pose){
   translation[z]+=tcpdisp
   return rw::math::Transform3D<>(translation,pose.R())
 }
-rw::math::Q findGoalConfig(rw::models::Device::Ptr device_1,rw::models::Device::Ptr device_2, rw::kinematics::State state, rw::math::Transform3D<> pose1, rw::math::Transform3D<> pose2,bool tried=false) {
+std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::Device::Ptr device_1,rw::models::Device::Ptr device_2, rw::kinematics::State state, rw::math::Transform3D<> pose1, rw::math::Transform3D<> pose2,bool tried=false) {
 
-    rw::math::Q result(qlength);
+    std::vector<std::vector<rw::math::Q>> result
     pose1=accountForGripper(pose1);
     rw::invkin::IterativeIK::Ptr solver=rw::invkin::JacobianIKSolver::makeDefault(device_1,state);
     std::vector<rw::math::Q> iter1= solver->solve(pose1,state);
@@ -49,9 +49,8 @@ rw::math::Q findGoalConfig(rw::models::Device::Ptr device_1,rw::models::Device::
         if (!tried)
             result=findGoalConfig(device_1, device_2, state, pose2, pose1, true);
         return result;
-    }
-    else
-    findBestSolution(device_1->getQ(state),device_2->getQ(state),iter1, iter2, result);
-    std::cout << "FOUND!" << std::endl;
-        return result;
+      }
+      result.push_back(iter1);
+      result.push_back(iter2);
+      return result;
 }
