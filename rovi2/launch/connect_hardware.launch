@@ -1,4 +1,4 @@
-<launch>
+'<launch>
 
 <group>
  <arg name="camera"              default="camera"/>
@@ -18,8 +18,6 @@
   <arg name="depth_height"        default="480"/>
   <arg name="enable_depth"        default="true"/>
 
-  <arg name="infra_width"         default="640"/>
-  <arg name="infra_height"        default="480"/>
   <arg name="enable_infra1"       default="false"/>
   <arg name="enable_infra2"       default="false"/>
 
@@ -29,12 +27,7 @@
 
   <arg name="fisheye_fps"         default="30"/>
   <arg name="depth_fps"           default="30"/>
-  <arg name="infra_fps"           default="30"/>
   <arg name="color_fps"           default="30"/>
-  <arg name="gyro_fps"            default="400"/>
-  <arg name="accel_fps"           default="250"/>
-  <arg name="enable_gyro"         default="true"/>
-  <arg name="enable_accel"        default="true"/>
   <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="true"/>
   <arg name="align_depth"         default="true"/>
@@ -93,19 +86,12 @@
       <arg name="color_width"              value="$(arg color_width)"/>
       <arg name="color_height"             value="$(arg color_height)"/>
       <arg name="enable_color"             value="$(arg enable_color)"/>
-      <arg name="infra_width"              value="$(arg infra_width)"/>
-      <arg name="infra_height"             value="$(arg infra_height)"/>
       <arg name="enable_infra1"            value="$(arg enable_infra1)"/>
       <arg name="enable_infra2"            value="$(arg enable_infra2)"/>
 
       <arg name="fisheye_fps"              value="$(arg fisheye_fps)"/>
       <arg name="depth_fps"                value="$(arg depth_fps)"/>
-      <arg name="infra_fps"                value="$(arg infra_fps)"/>
       <arg name="color_fps"                value="$(arg color_fps)"/>
-      <arg name="gyro_fps"                 value="$(arg gyro_fps)"/>
-      <arg name="accel_fps"                value="$(arg accel_fps)"/>
-      <arg name="enable_gyro"              value="$(arg enable_gyro)"/>
-      <arg name="enable_accel"             value="$(arg enable_accel)"/>
       <arg name="filters"                  value="$(arg filters)"/>
     </include>
 
@@ -160,17 +146,17 @@
   </group>
 
   <group>
-    <include file="$(find caros_universalrobot)/launch/caros_universalrobot_param.xml" ns="caros_universalrobot">
+    <include file="$(find rovi2)/caros_param/caros_universalrobot_param.xml" ns="caros_universalrobot">
     </include>
     <node pkg="caros_universalrobot" type="caros_universalrobot_node" name="caros_universalrobot">
     </node>
   </group>
 
  <group>
-   <include file="$(find caros_universalrobot)/launch/caros_universalrobot2_param.xml" ns="caros_universalrobot2"></include>
+   <include file="$(find rovi2)/caros_param/caros_universalrobot2_param.xml" ns="caros_universalrobot2"></include>
     <node pkg="caros_universalrobot" type="caros_universalrobot_node" name="caros_universalrobot2">
     </node>
- </group>
+</group>
 </group>
 
  <group>
