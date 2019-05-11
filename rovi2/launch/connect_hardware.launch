@@ -1,4 +1,4 @@
-'<launch>
+<launch>
 
 <group>
  <arg name="camera"              default="camera"/>
