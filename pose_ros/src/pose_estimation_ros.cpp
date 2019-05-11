@@ -182,7 +182,7 @@ int main(int argc, char**argv) {
 
     objects.push_back("/home/student/Desktop/squarePCDV3.pcd");
     objects.push_back("/home/student/Desktop/trianglePCD.pcd"); 
-    ros::init(argc, argv, "Vo3D");
+    ros::init(argc, argv, "pose_estimation");
     ros::NodeHandle nh;
     ROS_INFO("About to enter %s" , "Callback");
     ros::Subscriber sub = nh.subscribe("/camera/depth_registered/points", 1, posesCallback);

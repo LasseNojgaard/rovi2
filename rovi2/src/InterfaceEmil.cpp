@@ -49,9 +49,7 @@ void visionInfo(const pose_ros::Object_pose::ConstPtr& pose)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "talker");
-  ros::init(argc, argv, "listener");
-  ros::init(argc, argv, "grasp_service_server");
+  ros::init(argc, argv, "interface");
   ros::NodeHandle nh;
   ros::Rate loop_rate(10);
   ROS_INFO("Started Code");
