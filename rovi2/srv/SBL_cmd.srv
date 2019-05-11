@@ -1,14 +1,15 @@
-float32 QA0
-float32 QA1
-float32 QA2
-float32 QA3
-float32 QA4
-float32 QA5
-float32 QB0
-float32 QB1
-float32 QB2
-float32 QB3
-float32 QB4
-float32 QB5
+float32 tAx
+float32 tAy
+float32 tAz
+float32 rAx
+float32 rAy
+float32 rAz
+float32 tBx
+float32 tBy
+float32 tBz
+float32 rBx
+float32 rBy
+float32 rBz
+bool goal
 ---
 bool goalReached

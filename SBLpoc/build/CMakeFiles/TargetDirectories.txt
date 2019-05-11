@@ -1,3 +1,0 @@
-/home/student/rovi2/SBLpoc/build/CMakeFiles/rebuild_cache.dir
-/home/student/rovi2/SBLpoc/build/CMakeFiles/SBLpoc.dir
-/home/student/rovi2/SBLpoc/build/CMakeFiles/edit_cache.dir

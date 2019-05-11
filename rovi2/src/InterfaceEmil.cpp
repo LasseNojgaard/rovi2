@@ -161,6 +161,7 @@ int main(int argc, char **argv)
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
         grasp_service.call(grasp_client);
+
         foundObjects = 0;
         objectRecived[0]=false;
         objectRecived[1]=false;
