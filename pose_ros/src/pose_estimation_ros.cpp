@@ -66,7 +66,7 @@ float bestInliers=0;
 float bestRMSEForIn=0;
 float bestInliersForIn=0;
 
-ros::Publisher chatter_pub;
+
 
 
 void nearest_feature(const FeatureT& query, const PointCloud<FeatureT>& target, int &idx, float &distsq);
@@ -91,6 +91,7 @@ Eigen::Vector4f centroid;
 
 Matrix4f poseGrab;
 
+ros::Publisher chatter_pub;
 
 void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosInput)
 {   
@@ -166,6 +167,8 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     msg.pitch=angles[1];
     msg.yaw=angles[2];
 
+    chatter_pub.publish(msg);
+
     if(objectIterator==1) {
         objectIterator=0;
     }
@@ -183,8 +186,13 @@ int main(int argc, char**argv) {
     ros::NodeHandle nh;
     ROS_INFO("About to enter %s" , "Callback");
     ros::Subscriber sub = nh.subscribe("/camera/depth_registered/points", 1, posesCallback);
-    ros::spin();
-
+    
+    ros::Rate loop_rate(10);
+    while (ros::ok()) {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    
     return 0;
 }
 
