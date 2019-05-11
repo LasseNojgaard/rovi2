@@ -1,0 +1,3 @@
+/home/student/catkin_ws/src/pose_final_test/build/CMakeFiles/rebuild_cache.dir
+/home/student/catkin_ws/src/pose_final_test/build/CMakeFiles/pose_final_test.dir
+/home/student/catkin_ws/src/pose_final_test/build/CMakeFiles/edit_cache.dir
