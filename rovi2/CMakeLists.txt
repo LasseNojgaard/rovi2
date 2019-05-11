@@ -70,7 +70,7 @@ catkin_package(
 ###########
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
+include_directories(              ROS_INFO("PoseA sent to SBL: ")
 # include
   ${catkin_INCLUDE_DIRS}
 
@@ -81,6 +81,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/rovi2_node.cpp)
 add_executable(grasp src/grasp_service.cpp)
+#add_executable(SBL src/SBLcollision.cpp)
+add_executable(rovi2Interface src/InterfaceEmil.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -88,7 +90,7 @@ add_executable(grasp src/grasp_service.cpp)
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 target_link_libraries(grasp ${catkin_LIBRARIES})
 #target_link_libraries(SBL ${catkin_LIBRARIES})
-
+target_link_libraries(rovi2Interface ${catkin_LIBRARIES})
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
