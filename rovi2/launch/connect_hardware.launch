@@ -155,7 +155,7 @@
 <group>
   <arg name="set_workcell" default="1" />
   <group if="$(arg set_workcell)">
-    <arg name="workcell_path" default="$(find robot_plugin)/WorkCell/WRS-RobWork/WRS_v3.wc.xml" />
+    <arg name="workcell_path" default="$(find rovi2)/WorkCell/WRS-RobWork/WRS_v3.wc.xml" />
     <param name="/caros/workcell" value="$(arg workcell_path)" />
   </group>
 
