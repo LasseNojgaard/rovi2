@@ -7,9 +7,9 @@ float32 rAz
 float32 tBx
 float32 tBy
 float32 tBz
-float32 rBr
+float32 rBx
 float32 rBy
-float32 RBz
+float32 rBz
 bool goal
 ---
 bool goalReached

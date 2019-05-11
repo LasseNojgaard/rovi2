@@ -34,6 +34,7 @@
 #include <iostream>
 #include <time.h>
 #include "includes/inversekin.h"
+#include "rovi2/SBL_cmd.h"
 //---------
 // Namespaces
 
@@ -65,6 +66,35 @@ using namespace std;
 
 clock_t timeStart;
 
+Q Qa = Q(6);
+Q Qb = Q(6);
+
+double SBLepsi = 0.2;
+double pruneepsi = 0.01;
+int amountOfSteps = 100;
+Q currentpos = Q(12);
+Q goalpos = Q(12);
+
+bool switched = false;
+
+Q RobASquareRobBTri = Q(12);
+Q RobATriRobBSquare = Q(12);
+
+Q RobASquare(6, -0.8286, -1.1578,  1.8373, -2.2377, -1.5537, -0.8326);
+Q RobATri(6, -0.5465, -1.3274,  2.0428, -2.2492, -1.6038, -0.5401);
+Q RobBSquare(6,  3.9039, -2.0098, -1.7317, -0.9808,  1.6159,  3.9584);
+Q RobBTri(6, 3.6644 , -1.8676, -1.8989, -1.0069, 1.6128, 3.5867);
+
+rw::models::WorkCell::Ptr workcell;
+rw::models::Device::Ptr deviceA;
+rw::models::Device::Ptr deviceB;
+
+TreeDevice::Ptr deviceTree;
+
+caros::SerialDeviceSIProxy *sd_sipA;
+caros::SerialDeviceSIProxy *sd_sipB;
+
+State state;
 //--------------------
 // Functions
 
@@ -212,66 +242,109 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
 
 bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 {
-  currentpos = deviceTree->getQ(state);
-    deviceTree->setQ(currentpos, state);
-    cout << "currentposition: " << currentpos << endl;
-    Q robA = {6, -0.022, -2.746, 0.798, -2.042, -1.574, 1.2};
-    Q robB = {6, -0.022, -2.746, 0.798, -2.042, -1.574, 1.2};
 
-    Vector3D<> TA(-0.0965843, -0.174872, 0.981973);
-    Rotation3D<> rotA(0.383167, -0.768162, -0.512942, 0.0679667, -0.530372, 0.845036, -0.921175, -0.358653, -0.151012);
-    RPY<> RA(0.78, 0.2, 0.45);
-    Vector3D<> TB(-0.0965843, -0.174872, 0.981973);
-    Rotation3D<> rotB(0.383167, -0.768162, -0.512942, 0.0679667, -0.530372, 0.845036, -0.921175, -0.358653, -0.151012);
+    currentpos = deviceTree->getQ(state);
 
-    RPY<> RB(0.78, 0.2, 0.45);
-    Transform3D<> poseA(TA, rotA);
-    Transform3D<> poseB(TB, rotB);
+    Vector3D<> TA(req.tAx, req.tAy, req.tAz);
+    bool goal = req.goal;
+    RPY<> RA(req.rAz, req.rAy, req.rAx);
+    Vector3D<> TB(req.tBx, req.tBy, req.tBz);
+
+    RPY<> RB(req.rBz, req.rBy, req.rBx);
+    Transform3D<> poseA(TA, RA.toRotation3D());
+    Transform3D<> poseB(TB, RB.toRotation3D());
 
     double pruneepsi = 0.01;
     double SBLepsi = 0.01;
 
-//    rw::math::Transform3D<> goalPositionA = relatePosetoBase(workcell, deviceA , poseA, state);
-  //  rw::math::Transform3D<> goalPositionB = relatePosetoBase(workcell, deviceB , poseB, state);
-    Q haps = Q(12);
-    cout << "default: " << haps << endl;
-    Q goalpos = findGoalConfig(deviceA, deviceB, state, poseA, poseB);
-    cout << "Goalposition: " << goalpos << endl;
-    rw::trajectory::Path<Q> agoodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
+    rw::math::Transform3D<> goalPositionA = poseA;
+    rw::math::Transform3D<> goalPositionB = poseB;
+    vector<vector<Q>> goalposIntermidiate = findGoalConfig(deviceA, deviceB, state, poseA, poseB, switched);
+    if (goalposIntermidiate[0].size()==0 || goalposIntermidiate[1].size()==0)
+    {
+      ROS_ERROR("No kinematic solution found!");
+      return 1;
+    }
+    CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
+    bool confCollisionFree = false;
+    bool collision = false;
+    for (size_t i = 0; i < goalposIntermidiate[0].size(); i++)
+    {
+      deviceA->setQ(goalposIntermidiate[0][i], state);
+      for (size_t j = 0; j < goalposIntermidiate[1].size(); j++)
+      {
+        deviceB->setQ(goalposIntermidiate[1][j], state);
+
+        CollisionDetector::QueryResult data;
+        collision = detector->inCollision(state,&data);
+
+        if (!collision)
+        {
+          i = goalposIntermidiate[0].size();
+          j = goalposIntermidiate[1].size();
+          confCollisionFree = true;
+          goalpos = createQ12(goalposIntermidiate[0], goalposIntermidiate[1], i, j);
+        }
+      }
+    }
+    if (!confCollisionFree) {
+      ROS_ERROR("No combination of configurations found!");
+      return 1;
+    }
+    rw::trajectory::Path<Q> agoodPath;
+    if (goal==true)
+    {
+      if (switched==false)
+      {
+        agoodPath = SBL(currentpos, RobASquareRobBTri, detector, deviceTree, state, SBLepsi, workcell);
+      }
+      else
+      {
+        agoodPath = SBL(currentpos, RobATriRobBSquare, detector, deviceTree, state, SBLepsi, workcell);
+      }
+    }
+    else
+    {
+      agoodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
+    }
 
     if (agoodPath.size()>0)
     {
       rw::trajectory::Path<Q> aprunedPath = pathPrune(agoodPath, pruneepsi, state, detector, deviceTree);
       rw::trajectory::Path<Q> ainterpolated = interpolate(aprunedPath,amountOfSteps);
 
-
-    Q Qa = Q(6);
-    Q Qb = Q(6);
-    for (size_t i = 0; i < ainterpolated.size(); i++)
-    {
-      for (size_t j = 0; j < 6; j++)
+      Q Qa = Q(6);
+      Q Qb = Q(6);
+      for (size_t i = 0; i < ainterpolated.size(); i++)
       {
-        Qa[j] = ainterpolated[i][j];
+        for (size_t j = 0; j < 6; j++)
+        {
+          Qa[j] = ainterpolated[i][j];
+        }
+        for (size_t j = 6; j < 12; j++)
+        {
+          Qb[j] = ainterpolated[i][j];
+        }
+        sd_sipA->movePtp(Qa);
+        sd_sipB->movePtp(Qb);
+
       }
-      for (size_t j = 6; j < 12; j++)
+      for (size_t i = 0; i < Qa.size(); i++)
       {
-        Qb[j] = ainterpolated[i][j];
+        cout << "Qa" << i << " "<<Qa[i] << endl;
       }
-      //sd_sipA.movePtp(Qa);
-      //sd_sipB.movePtp(Qb);
 
+      for (size_t i = 0; i < Qb.size(); i++)
+      {
+        cout << "Qb" << i << " "<<Qb[i] << endl;
+      }
+      cout << "Goalposition: " << goalpos << endl;
+      currentpos = goalpos;
     }
-    for (size_t i = 0; i < Qa.size(); i++)
+    else
     {
-      cout << "Qa" << i << " "<<Qa[i] << endl;
-    }
-
-    for (size_t i = 0; i < Qb.size(); i++)
-    {
-      cout << "Qb" << i << " "<<Qb[i] << endl;
-    }
-    cout << "Goalposition: " << goalpos << endl;
-    currentpos = goalpos;
+      ROS_ERROR("No path found !");
+      return 1;
     }
   /*
     Math::Vector3D<> TA(req.tAx, req.tAy, req.tAz);
@@ -311,40 +384,43 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 }
 
 
-Q Qa = Q(6);
-Q Qb = Q(6);
 
-double SBLepsi = 0.2;
-double pruneepsi = 0.01;
-int amountOfSteps = 100;
-Q currentpos = Q(12);
-Q goalpos = Q(12);
+
 
 //----------
 // Main
 //---------
 int main(int argc, char **argv)
 {
+    ros::init(argc, argv, "SBL_cmd");
     // Define Workcell path and Robot name
     //string wcFile = "../Workcells/WRS-RobWork12DOG/WRS_v3v2.wc.xml"; //Our own workcell and own 12 degree robot
     //string wcFile = "../Workcells/UR5/Scene.wc.xml";
     string wcFile = "../Workcells/WRS-RobWork/WRS_v3.wc.xml";
 
+    for (size_t i = 0; i < 6; i++)
+    {
+      RobASquareRobBTri[i] = RobASquare[i];
+      RobASquareRobBTri[i+6] = RobBTri[i];
+    }
+    for (size_t i = 0; i < 6; i++) {
+      RobATriRobBSquare[i] = RobATri[i];
+      RobATriRobBSquare[i+6] = RobBSquare[i];
+    }
     //--- Device names:
     //string deviceAName = "UR5";
     string deviceAName = "UR10A";
     string deviceBName = "UR10B";
 
-    ros::init(argc,argv,"SBL");
     ros::NodeHandle n;
-    caros::SerialDeviceSIProxy sd_sipA(n, "caros_universalrobot");
-    caros::SerialDeviceSIProxy sd_sipB(n, "caros_universalrobot2");
-    rw::models::WorkCell::Ptr workcell=caros::getWorkCell();
-    rw::models::Device::Ptr deviceA =workcell->findDevice("UR10A");
-    rw::models::Device::Ptr deviceB=workcell->findDevice("UR10B");
+    sd_sipA = new caros::SerialDeviceSIProxy(n, "caros_universalrobot");
+    sd_sipB = new caros::SerialDeviceSIProxy(n, "caros_universalrobot2");
+    workcell=caros::getWorkCell();
+    deviceA =workcell->findDevice("UR10A");
+    deviceB=workcell->findDevice("UR10B");
     // Get the state of the workcell
     cout << "Getting state of workcell" << endl;
-    State state = workcell->getDefaultState();
+    state = workcell->getDefaultState();
 
     // Create a default collision detector
     CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
@@ -364,11 +440,13 @@ int main(int argc, char **argv)
     string refFrame = "RefFrame";
     string TopPlateName = "TopPlate";
     cout << "making tree" << endl;
-    TreeDevice::Ptr deviceTree = new TreeDevice(workcell->findFrame(refFrame), vectorOfEnds, "TreeDevice", state);
-    Q positionBegin = deviceTree->getQ(state);
+    deviceTree = new TreeDevice(workcell->findFrame(refFrame), vectorOfEnds, "TreeDevice", state);
+    currentpos = deviceTree->getQ(state);
 
+    // -------------
+    ros::ServiceServer serviceSBL = n.advertiseService("SBL_cmd", SBL_cmd);
     //---------------------------------------------------------------------------------------------------------
-
+    ros::spin();
 
 
     cout << "Done" << endl;
