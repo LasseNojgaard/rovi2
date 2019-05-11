@@ -259,7 +259,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 
     rw::math::Transform3D<> goalPositionA = poseA;
     rw::math::Transform3D<> goalPositionB = poseB;
-    vector<vector<Q>> goalposIntermidiate = findGoalConfig(deviceA, deviceB, state, poseA, poseB, switched);
+    vector<vector<Q>> goalposIntermidiate = findGoalConfig(workcell,deviceA, deviceB, state, poseA, poseB, switched);
     if (goalposIntermidiate[0].size()==0 || goalposIntermidiate[1].size()==0)
     {
       ROS_ERROR("No kinematic solution found!");
