@@ -4,8 +4,6 @@
 
 //#include "rovi2/src/SBLcollision.cpp"
 #include <string>
-ros::NodeHandle nh;
-ros::Rate loop_rate(10);
 ros::Subscriber visionSub;
 ros::ServiceClient grasp_client;
 //ros::ServiceClient SBL_client;
@@ -15,8 +13,9 @@ int foundObjects = 0;
 bool objectRecived[2]={false, false};
 std::string rosInfo;
 
-void visionInfo(pose_ros::Object_pose::Ptr pose)
+void visionInfo(const pose_ros::Object_pose::ConstPtr& pose)
 {
+  ROS_INFO("In callback");
   if(objectRecived[pose->ID] == false)
   {
     foundObjects++;
@@ -27,31 +26,40 @@ void visionInfo(pose_ros::Object_pose::Ptr pose)
     objectLocations[pose->ID][4] = pose->pitch;
     objectLocations[pose->ID][5] = pose->yaw;
 
-    rosInfo = "PoseA: ";
+    if(pose->ID ==0 ) {
+      rosInfo = "PoseA: ";
       for (size_t i = 0; i < 5; i++) {
-          rosInfo += objectLocations[0][i];
+          rosInfo += std::to_string(objectLocations[0][i]);
+            rosInfo+= " , ";
       }
-      rosInfo+= "PoseB: ";
+    }
+    else {
+        rosInfo= "PoseB: ";
         for (size_t j = 0; j < 5; j++) {
-            rosInfo += objectLocations[1][j];
+            rosInfo += std::to_string(objectLocations[1][j]);
+            rosInfo+= " , ";
         }
-      ROS_INFO("%s", rosInfo.c_str());
+
+    }
+      ROS_INFO("[%s]", rosInfo.c_str());
+
+      objectRecived[pose->ID]=true;
   }
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "talker");
-  ros::init(argc, argv, "listener");
-  ros::init(argc, argv, "grasp_service_server");
-
+  ros::init(argc, argv, "interface");
+  ros::NodeHandle nh;
+  ros::Rate loop_rate(10);
+  ROS_INFO("Started Code");
   visionSub     = nh.subscribe("object_pose", 3, visionInfo);
   grasp_client  = nh.serviceClient<rovi2::Grasp_cmd>("grasp_cmd");
 //  SBL_client    = nh.serviceClient<SBLcollision::SBL_cmd>("SBL_cmd");
 
   while (ros::ok()){
     if(foundObjects > 1){
-      /*
+        /*
             SBL_client.request.tAx = objectLocations[0][0];
             SBL_client.request.tAy = objectLocations[0][1];
             SBL_client.request.tAz = objectLocations[0][2];
@@ -164,10 +172,12 @@ int main(int argc, char **argv)
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
         grasp_service.call(grasp_client);
-        */
-    foundObjects =0;
-    ros::spinOnce();
+          */
+        foundObjects = 0;
+        objectRecived[0]=false;
+        objectRecived[1]=false;
   }
+  ros::spinOnce();
 }
   return 0;
 }

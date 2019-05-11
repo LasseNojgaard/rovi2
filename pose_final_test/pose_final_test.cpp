@@ -67,7 +67,7 @@ void align_scene(PointCloud<PointT>::Ptr scene);
 void downscale(PointCloud<PointT>::Ptr scene);
 
 std::ofstream outfile;
-string filename= "FinalTestLine.csv";
+string filename= "FinalTestDUO.csv";
 
 int main(int argc, char**argv) {
 
@@ -81,9 +81,9 @@ int main(int argc, char**argv) {
         outfile << "RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total" << endl;
         outfile.close();
         
-        for(int RANSACIt=std::stoi(argv[2]); RANSACIt<=6000; RANSACIt=RANSACIt+2000) {
+        for(int RANSACIt=std::stoi(argv[2]); RANSACIt<=4000; RANSACIt=RANSACIt+2000) {
             RANSACIter=RANSACIt;
-            for(int sceneNr=std::stoi(argv[1]); sceneNr<=5;sceneNr++) {
+            for(int sceneNr=std::stoi(argv[1]); sceneNr<=20;sceneNr++) {
                 // Load
                 cout << "RANSAC: "<< RANSACIt<< " sceneNr: " << sceneNr << endl;
                 outfile.open(std::to_string(objectIterator)+filename, std::ios_base::app);
@@ -95,7 +95,7 @@ int main(int argc, char**argv) {
                 PointCloud<PointT>::Ptr grab(new PointCloud<PointT>);
               
                 loadPCDFile(objects[objectNr], *object);
-                loadPCDFile("/home/student/Desktop/LINE/scene"+std::to_string(sceneNr)+".pcd", *scene);
+                loadPCDFile("/home/student/Desktop/DUO/scene"+std::to_string(sceneNr)+".pcd", *scene);
                 loadPCDFile("/home/student/Desktop/grab.pcd", *grab);
                 pcl::removeNaNFromPointCloud(*scene, *scene, indices);
                 clock_t beginTotal = clock();
@@ -364,7 +364,7 @@ Matrix4f global_allignment(PointCloud<PointT>::Ptr object, PointCloud<PointT>::P
     // Show result
 
     
-    /*
+    
     {
         PCLVisualizer v("After global alignment");
         v.addPointCloud<PointT>(object_aligned, PointCloudColorHandlerCustom<PointT>(object_aligned, 0, 255, 0), "object_aligned");
@@ -373,7 +373,7 @@ Matrix4f global_allignment(PointCloud<PointT>::Ptr object, PointCloud<PointT>::P
         v.spin();
         v.close();
     }
-    */
+    
     
 
 
@@ -464,7 +464,7 @@ Matrix4f local_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>:
     } // End timing
 
     
-    /*
+    
     // Show result
     {
         PCLVisualizer v("After local alignment");
@@ -473,7 +473,7 @@ Matrix4f local_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>:
         v.spin();
         v.close();
     }
-    */
+    
     
 
     //return object_aligned;
