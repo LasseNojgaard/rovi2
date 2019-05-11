@@ -42,11 +42,11 @@ std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::WorkCell::Ptr w
 
 
     std::vector<std::vector<rw::math::Q>> result;
-    pose1=relatePoseToTCP(wc, device_1,pose1);
+    pose1=relatePoseToTCP(wc, device_1,pose1,state);
     pose1=accountForGripper(pose1);
     rw::invkin::IterativeIK::Ptr solver=rw::invkin::JacobianIKSolver::makeDefault(device_1,state);
     std::vector<rw::math::Q> iter1= solver->solve(pose1,state);
-    pose2=relatePoseToTCP(wc, device_2,pose2);
+    pose2=relatePoseToTCP(wc, device_2,pose2,state);
     pose2=accountForGripper(pose2);
     rw::invkin::IterativeIK::Ptr solver2=rw::invkin::JacobianIKSolver::makeDefault(device_2,state);
     std::vector<rw::math::Q> iter2 = solver2->solve(pose2,state);
@@ -55,7 +55,7 @@ std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::WorkCell::Ptr w
         if (!tried)
 	  {
 	    tried = true;
-            result=findGoalConfig(device_1, device_2, state, pose2, pose1, tried);
+            result=findGoalConfig(wc,device_1, device_2, state, pose2, pose1, tried);
 	   }
         return result;
 

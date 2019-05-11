@@ -242,15 +242,15 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
 
 bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 {
-
+    ROS_INFO("In service");
     currentpos = deviceTree->getQ(state);
 
     Vector3D<> TA(req.tAx, req.tAy, req.tAz);
     bool goal = req.goal;
     RPY<> RA(req.rAz, req.rAy, req.rAx);
     Vector3D<> TB(req.tBx, req.tBy, req.tBz);
-
     RPY<> RB(req.rBz, req.rBy, req.rBx);
+    ROS_INFO("Extracted Transform3D");
     Transform3D<> poseA(TA, RA.toRotation3D());
     Transform3D<> poseB(TB, RB.toRotation3D());
 
@@ -259,12 +259,13 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 
     rw::math::Transform3D<> goalPositionA = poseA;
     rw::math::Transform3D<> goalPositionB = poseB;
-    vector<vector<Q>> goalposIntermidiate = findGoalConfig(workcell,deviceA, deviceB, state, poseA, poseB, switched);
+    vector<vector<Q>> goalposIntermidiate = findGoalConfig(deviceA, deviceB, state, poseA, poseB, switched);
     if (goalposIntermidiate[0].size()==0 || goalposIntermidiate[1].size()==0)
     {
       ROS_ERROR("No kinematic solution found!");
       return 1;
     }
+    ROS_INFO("Kinematic solution found!");
     CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
     bool confCollisionFree = false;
     bool collision = false;
@@ -291,6 +292,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
       ROS_ERROR("No combination of configurations found!");
       return 1;
     }
+    ROS_INFO("Collision free combination found");
     rw::trajectory::Path<Q> agoodPath;
     if (goal==true)
     {
@@ -305,6 +307,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     }
     else
     {
+      ROS_INFO("Starting SBL");
       agoodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
     }
 
@@ -312,7 +315,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     {
       rw::trajectory::Path<Q> aprunedPath = pathPrune(agoodPath, pruneepsi, state, detector, deviceTree);
       rw::trajectory::Path<Q> ainterpolated = interpolate(aprunedPath,amountOfSteps);
-
+      ROS_INFO("Pruned and iterpolated");
       Q Qa = Q(6);
       Q Qb = Q(6);
       for (size_t i = 0; i < ainterpolated.size(); i++)
@@ -325,20 +328,23 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
         {
           Qb[j] = ainterpolated[i][j];
         }
+        ROS_INFO("Moving Robot");
         sd_sipA->movePtp(Qa);
         sd_sipB->movePtp(Qb);
 
       }
+      ROS_INFO_STREAM("Qa: ");
       for (size_t i = 0; i < Qa.size(); i++)
       {
-        cout << "Qa" << i << " "<<Qa[i] << endl;
+        ROS_INFO_STREAM(Qa[i] << ",");
       }
-
+      ROS_INFO_STREAM("/n Qb: ");
       for (size_t i = 0; i < Qb.size(); i++)
       {
-        cout << "Qb" << i << " "<<Qb[i] << endl;
+        ROS_INFO_STREAM(Qb[i] << ",");
       }
-      cout << "Goalposition: " << goalpos << endl;
+
+      ROS_INFO_STREAM("/n Goalposition: " << goalpos << endl);
       currentpos = goalpos;
     }
     else
@@ -346,40 +352,6 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
       ROS_ERROR("No path found !");
       return 1;
     }
-  /*
-    Math::Vector3D<> TA(req.tAx, req.tAy, req.tAz);
-    Math::Vector3D<> RA(req.rAx, req.rAy, req.rAz);
-    Math::Vector3D<> TB(req.tBx, req.tBy, req.tBz);
-    Math::Vector3D<> RB(req.rBx, req.rBy, req.rBz);
-    Math::Transform3D<> poseA = transformA(TA, RA);
-    Math::Transform3d<> poseB = transformB(TB, RB);
-
-    rw::math::Transform3D goalPositionA = relatePosetoBase(workcell, deviceA , transformA, state);
-    rw::math::Transform3D goalPositionB = relatePosetoBase(workcell, deviceB , transformB, state);
-
-    goalpos = findGoalConfig(deviceA, deviceB, state, goalPositionA, goalPositionB);
-
-    rw::trajectory::Path<Q> goodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
-
-    rw::trajectory::Path<Q> prunedPath = pathPrune(goodPath, pruneepsi, state, detector, deviceTree);
-
-    rw::trajectory::Path<Q> interpolated = interpolate(prunedPath,amountOfSteps);
-
-    for (size_t i = 0; i < interpolated.size(); i++)
-    {
-      for (size_t j = 0; j < 6; j++)
-      {
-        Qa[j] = interpolated[i][j];
-      }
-      for (size_t j = 6; j < 12; j++)
-      {
-        Qb[j] = interpolated[i][j];
-      }
-      sd_sipA.movePtp(Qa);
-      sd_sipB.movePtp(Qb);
-    }
-    currentpos = goalpos;
-*/
     return true;
 }
 
@@ -393,11 +365,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "SBL_cmd");
-    // Define Workcell path and Robot name
-    //string wcFile = "../Workcells/WRS-RobWork12DOG/WRS_v3v2.wc.xml"; //Our own workcell and own 12 degree robot
-    //string wcFile = "../Workcells/UR5/Scene.wc.xml";
-    string wcFile = "../Workcells/WRS-RobWork/WRS_v3.wc.xml";
-
+    ROS_INFO_STREAM("Node Started");
     for (size_t i = 0; i < 6; i++)
     {
       RobASquareRobBTri[i] = RobASquare[i];
@@ -407,14 +375,13 @@ int main(int argc, char **argv)
       RobATriRobBSquare[i] = RobATri[i];
       RobATriRobBSquare[i+6] = RobBSquare[i];
     }
-    //--- Device names:
-    //string deviceAName = "UR5";
     string deviceAName = "UR10A";
     string deviceBName = "UR10B";
 
     ros::NodeHandle n;
     sd_sipA = new caros::SerialDeviceSIProxy(n, "caros_universalrobot");
     sd_sipB = new caros::SerialDeviceSIProxy(n, "caros_universalrobot2");
+    ROS_INFO_STREAM("SerialDeviceSIProxy created");
     workcell=caros::getWorkCell();
     deviceA =workcell->findDevice("UR10A");
     deviceB=workcell->findDevice("UR10B");
@@ -442,6 +409,7 @@ int main(int argc, char **argv)
     cout << "making tree" << endl;
     deviceTree = new TreeDevice(workcell->findFrame(refFrame), vectorOfEnds, "TreeDevice", state);
     currentpos = deviceTree->getQ(state);
+    cout << "Done" << endl;
 
     // -------------
     ros::ServiceServer serviceSBL = n.advertiseService("SBL_cmd", SBL_cmd);
@@ -449,7 +417,6 @@ int main(int argc, char **argv)
     ros::spin();
 
 
-    cout << "Done" << endl;
 
     return 0;
 }

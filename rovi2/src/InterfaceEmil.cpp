@@ -2,10 +2,10 @@
 #include "pose_ros/Object_pose.h"
 #include "rovi2/Grasp_cmd.h"
 
-#include "rovi2/src/SBLcollision.cpp"
+#include "rovi2/SBL_cmd.h"
 #include <string>
 ros::Subscriber visionSub;
-ros::ServiceClient grasp_client;
+ros::ServiceClient grasp_clienter;
 ros::ServiceClient SBL_client;
 
 float objectLocations[2][6];  // x, y, z, roll, pitch, yaw;
@@ -53,29 +53,29 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::Rate loop_rate(10);
   ROS_INFO("Started Code");
-  visionSub     = nh.subscribe("object_pose", 3, visionInfo);
-  grasp_client  = nh.serviceClient<rovi2::Grasp_cmd>("grasp_cmd");
-  SBL_client    = nh.serviceClient<SBLcollision::SBL_cmd>("SBL_cmd");
+  ros::Subscriber visionSub     = nh.subscribe("object_pose", 3, visionInfo);
+  ros::ServiceClient grasp_clienter  = nh.serviceClient<rovi2::Grasp_cmd>("grasp_cmd");
+  ros::ServiceClient SBL_client    = nh.serviceClient<rovi2::SBL_cmd>("SBL_cmd");
 
   while (ros::ok()){
     if(foundObjects > 1){
-            SBL_client.request.tAx = objectLocations[0][0];
-            SBL_client.request.tAy = objectLocations[0][1];
-            SBL_client.request.tAz = objectLocations[0][2];
-            SBL_client.request.rAx = objectLocations[0][3];
-            SBL_client.request.rAy = objectLocations[0][4];
-            SBL_client.request.rAz = objectLocations[0][5];
-            SBL_client.request.tBx = objectLocations[1][0];
-            SBL_client.request.tBy = objectLocations[1][1];
-            SBL_client.request.tBz = objectLocations[1][2];
-            SBL_client.request.rBx = objectLocations[1][3];
-            SBL_client.request.rBy = objectLocations[1][4];
-            SBL_client.request.rBz = objectLocations[1][5];
-            SBL_client.request.goal = false;
+	          rovi2::SBL_cmd sbl_req;
+            sbl_req.request.tAx = objectLocations[0][0];
+            sbl_req.request.tAy = objectLocations[0][1];
+            sbl_req.request.tAz = objectLocations[0][2];
+            sbl_req.request.rAx = objectLocations[0][3];
+            sbl_req.request.rAy = objectLocations[0][4];
+            sbl_req.request.rAz = objectLocations[0][5];
+            sbl_req.request.tBx = objectLocations[1][0];
+            sbl_req.request.tBy = objectLocations[1][1];
+            sbl_req.request.tBz = objectLocations[1][2];
+            sbl_req.request.rBx = objectLocations[1][3];
+            sbl_req.request.rBy = objectLocations[1][4];
+            sbl_req.request.rBz = objectLocations[1][5];
+            sbl_req.request.goal = false;
             foundObjects =0;
-      
 
-        if(SBLcollision.call(SBL_client))
+        if(SBL_client.call(sbl_req))
           {
             ROS_INFO("Moved succeeded");
           }
@@ -84,13 +84,14 @@ int main(int argc, char **argv)
             ROS_ERROR("Failed to call SBL service");
             return 0;
           }
+	rovi2::Grasp_cmd grasp_client;
         grasp_client.request.ID = "UR10A";
         grasp_client.request.grasp = true;
         grasp_client.request.release = false;
         grasp_client.request.homeGripper = false;
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
-        grasp_service.call(grasp_client);
+        grasp_clienter.call(grasp_client);
 
         grasp_client.request.ID = "UR10B";
         grasp_client.request.grasp = true;
@@ -98,22 +99,22 @@ int main(int argc, char **argv)
         grasp_client.request.homeGripper = false;
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
-        grasp_service.call(grasp_client);
+        grasp_clienter.call(grasp_client);
 
-        SBL_client.request.tAx = objectLocations[0][0];
-        SBL_client.request.tAy = objectLocations[0][1];
-        SBL_client.request.tAz = objectLocations[0][2];
-        SBL_client.request.rAx = objectLocations[0][3];
-        SBL_client.request.rAy = objectLocations[0][4]+0.15;
-        SBL_client.request.rAz = objectLocations[0][5];
-        SBL_client.request.tBx = objectLocations[1][0];
-        SBL_client.request.tBy = objectLocations[1][1];
-        SBL_client.request.tBz = objectLocations[1][2];
-        SBL_client.request.rBx = objectLocations[1][3];
-        SBL_client.request.rBy = objectLocations[1][4]+0.15;
-        SBL_client.request.rBz = objectLocations[1][5];
-        SBL_client.request.goal = false;
-        if(SBLcollision.call(SBL_client))
+        sbl_req.request.tAx = objectLocations[0][0];
+        sbl_req.request.tAy = objectLocations[0][1];
+        sbl_req.request.tAz = objectLocations[0][2];
+        sbl_req.request.rAx = objectLocations[0][3];
+        sbl_req.request.rAy = objectLocations[0][4]+0.15;
+        sbl_req.request.rAz = objectLocations[0][5];
+        sbl_req.request.tBx = objectLocations[1][0];
+        sbl_req.request.tBy = objectLocations[1][1];
+        sbl_req.request.tBz = objectLocations[1][2];
+        sbl_req.request.rBx = objectLocations[1][3];
+        sbl_req.request.rBy = objectLocations[1][4]+0.15;
+        sbl_req.request.rBz = objectLocations[1][5];
+        sbl_req.request.goal = false;
+        if(SBL_client.call(sbl_req))
           {
             ROS_INFO("Moved succeeded");
           }
@@ -123,20 +124,20 @@ int main(int argc, char **argv)
             return 0;
           }
 
-        SBL_client.request.tAx = 0;
-        SBL_client.request.tAy = 0;
-        SBL_client.request.tAz = 0;
-        SBL_client.request.rAx = 0;
-        SBL_client.request.rAy = 0;
-        SBL_client.request.rAz = 0;
-        SBL_client.request.tBx = 0;
-        SBL_client.request.tBy = 0;
-        SBL_client.request.tBz = 0;
-        SBL_client.request.rBx = 0;
-        SBL_client.request.rBy = 0;
-        SBL_client.request.rBz = 0;
-        SBL_client.request.goal = true;
-        if(SBLcollision.call(SBL_client))
+        sbl_req.request.tAx = 0;
+        sbl_req.request.tAy = 0;
+        sbl_req.request.tAz = 0;
+        sbl_req.request.rAx = 0;
+        sbl_req.request.rAy = 0;
+        sbl_req.request.rAz = 0;
+        sbl_req.request.tBx = 0;
+        sbl_req.request.tBy = 0;
+        sbl_req.request.tBz = 0;
+        sbl_req.request.rBx = 0;
+        sbl_req.request.rBy = 0;
+        sbl_req.request.rBz = 0;
+        sbl_req.request.goal = true;
+        if(SBL_client.call(sbl_req))
           {
             ROS_INFO("Moved succeeded");
           }
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
         grasp_client.request.homeGripper = false;
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
-        grasp_service.call(grasp_client);
+        grasp_clienter.call(grasp_client);
 
         grasp_client.request.ID = "UR10B";
         grasp_client.request.grasp = false;
@@ -160,7 +161,7 @@ int main(int argc, char **argv)
         grasp_client.request.homeGripper = false;
         grasp_client.request.speed = 25.0;
         grasp_client.request.force = 5.0;
-        grasp_service.call(grasp_client);
+        grasp_clienter.call(grasp_client);
 
         foundObjects = 0;
         objectRecived[0]=false;

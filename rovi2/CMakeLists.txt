@@ -32,6 +32,7 @@ find_package(
  add_service_files(
    FILES
    Grasp_cmd.srv
+   SBL_cmd.srv
  )
 ## Generate added messages and services
 generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2 pose_ros)
@@ -49,15 +50,15 @@ generate_messages(DEPENDENCIES std_msgs robotiq_2f_msgs rovi2 pose_ros)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rovi2
-  CATKIN_DEPENDS 
+  CATKIN_DEPENDS
 	caros_universalrobot
-	robotiq_2f_driver 
- 	std_msgs 
-	wsg_50_driver 
+	robotiq_2f_driver
+ 	std_msgs
+	wsg_50_driver
  	robotiq_2f_msgs
- 	message_runtime 
-	wsg_50_common 
-	pose_ros 
+ 	message_runtime
+	wsg_50_common
+	pose_ros
 	caros_sensor_msgs
 	caros_teleoperation
 	caros_common_robwork_msgs
@@ -81,7 +82,7 @@ include_directories(              ROS_INFO("PoseA sent to SBL: ")
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/rovi2_node.cpp)
 add_executable(grasp src/grasp_service.cpp)
-#add_executable(SBL src/SBLcollision.cpp)
+add_executable(SBL src/SBLcollision.cpp)
 add_executable(rovi2Interface src/InterfaceEmil.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -89,7 +90,7 @@ add_executable(rovi2Interface src/InterfaceEmil.cpp)
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 target_link_libraries(grasp ${catkin_LIBRARIES})
-#target_link_libraries(SBL ${catkin_LIBRARIES})
+target_link_libraries(SBL ${catkin_LIBRARIES})
 target_link_libraries(rovi2Interface ${catkin_LIBRARIES})
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -136,6 +137,4 @@ add_dependencies(grasp rovi2_generate_messages_cpp)
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-#add_dependencies(SBL rovi2_generate_messages_cpp)
-
-
+add_dependencies(SBL rovi2_generate_messages_cpp)

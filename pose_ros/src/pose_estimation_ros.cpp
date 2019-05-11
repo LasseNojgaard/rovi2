@@ -113,7 +113,7 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     PointCloud<PointT>::Ptr grab(new PointCloud<PointT>);
   
     loadPCDFile(objects[objectIterator], *object);
-    loadPCDFile("$(FIND pose_ros)/grab.pcd", *grab);
+    loadPCDFile("/home/christine/catkin_ws/src/rovi2/pose_ros/grab.pcd", *grab);
 
     align_scene(scene);
 
@@ -180,8 +180,8 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
 
 int main(int argc, char**argv) {
 
-    objects.push_back("$(FIND pose_ros)/squarePCDV3.pcd");
-    objects.push_back("$(FIND pose_ros)/trianglePCD.pcd"); 
+    objects.push_back("/home/christine/catkin_ws/src/rovi2/pose_ros/squarePCDV3.pcd");
+    objects.push_back("/home/christine/catkin_ws/src/rovi2/pose_ros/trianglePCD.pcd"); 
     ros::init(argc, argv, "pose_estimation");
     ros::NodeHandle nh;
     ROS_INFO("About to enter %s" , "Callback");
