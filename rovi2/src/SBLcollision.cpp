@@ -33,7 +33,7 @@
 #include <rw/models/TreeDevice.hpp>
 #include <iostream>
 #include <time.h>
-
+#include "includes/inversekin.h"
 //---------
 // Namespaces
 
@@ -59,7 +59,6 @@ using namespace rwlibs::proximitystrategies;
 using namespace rwlibs::pathplanners;
 
 using namespace std;
-
 
 //------------
 // Global constants
@@ -118,8 +117,6 @@ rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, Collisi
 
   return somePath;
 }
-
-
 
 bool extBinarySearch(double eps, Q qStart, Q qEnd, State& aState, CollisionDetector::Ptr aDetector, Device::Ptr aDevice) //true = no collision, false = collision
 {
@@ -212,6 +209,45 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
   cout << "Done interpolating" << endl;
   return tempPath;
 }
+
+bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
+{
+    Math::Vector3D<> TA(req.tAx, req.tAy, req.tAz);
+    Math::Vector3D<> RA(req.rAx, req.rAy, req.rAz);
+    Math::Vector3D<> TB(req.tBx, req.tBy, req.tBz);
+    Math::Vector3D<> RB(req.rBx, req.rBy, req.rBz);
+    Math::Transform3D<> poseA = transformA(TA, RA);
+    Math::Transform3d<> poseB = transformB(TB, RB);
+
+    rw::math::Transform3D goalPositionA = relatePosetoBase(workcell, deviceA , transformA, state);
+    rw::math::Transform3D goalPositionB = relatePosetoBase(workcell, deviceB , transformB, state);
+
+    goalpos = findGoalConfig(deviceA, deviceB, state, goalPositionA, goalPositionB);
+
+    rw::trajectory::Path<Q> goodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
+
+    rw::trajectory::Path<Q> prunedPath = pathPrune(goodPath, pruneepsi, state, detector, deviceTree);
+
+    rw::trajectory::Path<Q> interpolated = interpolate(prunedPath,amountOfSteps);
+
+    for (size_t i = 0; i < interpolated.size(); i++)
+    {
+      for (size_t j = 0; j < 6; j++)
+      {
+        Qa[j] = interpolated[i][j];
+      }
+      for (size_t j = 6; j < 12; j++)
+      {
+        Qb[j] = interpolated[i][j];
+      }
+      sd_sipA.movePtp(Qa);
+      sd_sipB.movePtp(Qb);
+    }
+    currentpos = goalpos;
+
+    return true;
+}
+
 /*
 Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::Ptr theDetector, State theState, int theSeed)
 {
@@ -233,10 +269,16 @@ Q generateRandomConfigTreeDevice(TreeDevice::Ptr theDevice, CollisionDetector::P
     cout << "Conf. incollision: " << inCollision <<  endl;
   }
 
-
-
 }*/
 
+Q Qa = Q(6);
+Q Qb = Q(6);
+
+double SBLepsi = 0.2;
+double pruneepsi = 0.01;
+int amountOfSteps = 100;
+Q currentpos = Q(12);
+Q goalpos = Q(12);
 
 //----------
 // Main
@@ -283,92 +325,9 @@ int main(int argc, char **argv)
     string TopPlateName = "TopPlate";
     cout << "making tree" << endl;
     TreeDevice::Ptr deviceTree = new TreeDevice(workcell->findFrame(refFrame), vectorOfEnds, "TreeDevice", state);
-
-    //----------------------------
-
     Q positionBegin = deviceTree->getQ(state);
 
-    Q endPointQ = Q(12);
-
-    vector<double> configurationVector = {3.407494068145752, -1.9994360409178675, -1.8003206253051758,
-                                          1.8201419550129394, -0.6341050306903284, -5.036266628895895,
-                                          -0.35499412218202764, -2.6603156528868617, 2.1026347319232386,
-                                          0.20941845952954097, 0.6679062843322754, 1.9573044776916504};
-    for(int i = 0; i <12 ; i++)
-    {
-      endPointQ[i] = configurationVector[i];
-    }
-    double anEpsilon = 0.2;
-
-    timeStart = clock();
-    rw::trajectory::Path<Q> goodPath = SBL(positionBegin, endPointQ, detector, deviceTree, state, anEpsilon, workcell);
-    double timeUsed = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
-
-    cout << "length of path: " << goodPath.size() << endl;
-    //for(size_t i = 0 ; i < goodPath.size() ; i++)
-    //{
-      //cout << goodPath[i] << endl;
-    //}
-
-    double epsi = 0.01;
-    //--Path trimming
-    timeStart = clock();
-    rw::trajectory::Path<Q> prunedPath = pathPrune(goodPath, epsi, state, detector, deviceTree);
-    double timeUsedPrune = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
-    cout << "length of path: " << prunedPath.size() << endl;
-    //for (size_t i = 0; i < prunedPath.size(); i++)
-    //{
-      //cout << prunedPath[i] << endl;
-    //}
-
-
-    const std::vector<State> states = Models::getStatePath(*deviceTree, goodPath, state);
-
-    const std::vector<State> states2 = Models::getStatePath(*deviceTree, prunedPath, state);
-
-    PathLoader::storeVelocityTimedStatePath(
-        *workcell, states, "ex-path-planning.rwplay");
-
-    PathLoader::storeVelocityTimedStatePath(*workcell, states2, "ex-path-pruned-planning.rwplay");
-        //--PathTesting
-
-        //--Optimization
-    line();
-
-    int amountOfSteps = 100;
-    timeStart = clock();
-    rw::trajectory::Path<Q> interpolated = interpolate(prunedPath,amountOfSteps);
-    double timeUsedInterpolate = ((double)(clock() - timeStart)) / CLOCKS_PER_SEC;
-    cout << "size of interpolated path: " << interpolated.size()<< endl;
-    line();
-    //for (size_t i = 0; i < interpolated.size(); i++) {
-      //cout << interpolated[i] << endl;
-    //}
-    const std::vector<State> states3 = Models::getStatePath(*deviceTree, interpolated, state);
-
-
-    PathLoader::storeVelocityTimedStatePath(*workcell, states3, "ex-path-prunedAndInterpolated-planning.rwplay");
-
-    cout << "Time used in seconds on SBL: " << timeUsed << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << goodPath.size() << endl;
-
-    cout << "Time used in seconds on pruning: " << timeUsedPrune << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << prunedPath.size() << endl;
-
-    cout << "Time used in seconds on interpolating: " << timeUsedInterpolate << endl;
-    cout << "Write out path: " << endl;
-    cout << "length of path: " << interpolated.size() << endl;
-
-    line();
-    cout << "Test!" << endl;
-    line();
-
-
-
-
-
+    //---------------------------------------------------------------------------------------------------------
 
 
 

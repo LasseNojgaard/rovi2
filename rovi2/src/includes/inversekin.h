@@ -24,12 +24,14 @@ void findBestSolution(rw::math::Q current1, rw::math::Q current2,std::vector<rw:
     }
 
 }
+
 rw::math::Transform3D<> relatePosetoBase(rw::models::WorkCell::Ptr wc, rw::models::Device::Ptr device ,rw::math::Transform3D<> pose, rw::kinematics::State state){
     rw::kinematics::Frame* table=wc->findFrame("TopPlate");
     rw::kinematics::Frame* base=device->getBase();
     rw::math::Transform3D<> table2base= table->fTf(base,state);
     return pose*table2base;
 }
+
 rw::math::Q findGoalConfig(rw::models::Device::Ptr device_1,rw::models::Device::Ptr device_2, rw::kinematics::State state, rw::math::Transform3D<> pose1, rw::math::Transform3D<> pose2,bool tried=false) {
 
     rw::math::Q result(12);
