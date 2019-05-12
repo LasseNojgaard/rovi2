@@ -27,7 +27,7 @@ rw::math::Q createQ12(std::vector<rw::math::Q> iter1, std::vector<rw::math::Q> i
 
 rw::math::Transform3D<> relatePoseToTCP(rw::models::WorkCell::Ptr wc, rw::models::Device::Ptr device ,rw::math::Transform3D<> pose, rw::kinematics::State state){
     rw::kinematics::Frame* table=wc->findFrame("TopPlate");
-    rw::kinematics::Frame* TCP=device->getEnd();
+    rw::kinematics::Frame* TCP=device->getBase();
     rw::math::Transform3D<> table2TCP= table->fTf(TCP,state);
     return pose*table2TCP;
 }
