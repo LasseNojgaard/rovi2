@@ -91,8 +91,6 @@ rw::models::Device::Ptr deviceB;
 
 TreeDevice::Ptr deviceTree;
 
-caros::SerialDeviceSIProxy *sd_sipA;
-caros::SerialDeviceSIProxy *sd_sipB;
 
 State state;
 //--------------------
@@ -243,6 +241,10 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
 bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 {
     ROS_INFO("In service");
+        ros::NodeHandle n;
+    //ros::NodeHandle n1;
+    caros::SerialDeviceSIProxy sd_sipA(n, "caros_universalrobot");
+    //caros::SerialDeviceSIProxy sd_sipB(n1, "caros_universalrobot2");
     currentpos = deviceTree->getQ(state);
 
     Vector3D<> TA(req.tAx, req.tAy, req.tAz);
@@ -329,8 +331,8 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
           Qb[j] = ainterpolated[i][j];
         }
         ROS_INFO("Moving Robot");
-        sd_sipA->movePtp(Qa);
-        sd_sipB->movePtp(Qb);
+        sd_sipA.movePtp(Qa);
+        //sd_sipB.movePtp(Qb);
 
       }
       ROS_INFO_STREAM("Qa: ");
@@ -379,8 +381,9 @@ int main(int argc, char **argv)
     string deviceBName = "UR10B";
 
     ros::NodeHandle n;
-    sd_sipA = new caros::SerialDeviceSIProxy(n, "caros_universalrobot");
-    sd_sipB = new caros::SerialDeviceSIProxy(n, "caros_universalrobot2");
+    ros::NodeHandle n2;
+    caros::SerialDeviceSIProxy sd_sipA(n, "caros_universalrobot");
+    //caros::SerialDeviceSIProxy sd_sipB(n2, "caros_universalrobot2");
     ROS_INFO_STREAM("SerialDeviceSIProxy created");
     workcell=caros::getWorkCell();
     deviceA =workcell->findDevice("UR10A");
@@ -408,8 +411,14 @@ int main(int argc, char **argv)
     currentpos[0]=-0;currentpos[1]= -2.2689;currentpos[2]= 2.2689;currentpos[3]= -1.5708;currentpos[4]= -1.5708;currentpos[5]= 1.6689;
     currentpos[6]=3.1415;currentpos[7]= -0.8727;currentpos[8]= -2.2689;currentpos[9]= -1.5708;currentpos[10]= 1.5708;currentpos[11]= 0;
     deviceTree->setQ(currentpos,state);
-    sd_sipA->movePtp(Q(6,-0, -2.2689, 2.2689, -1.5708, -1.5708, 1.6689));
-    sd_sipB->movePtp(Q(6,3.1415, -0.8727, -2.2689, -1.5708, 1.5708,0));
+    Q q1 = Q(6,-0, -2.2689, 2.2689, -1.5708, -1.5708, 1.6689);
+    Q q2 = Q(6,3.1415, -0.8727, -2.2689, -1.5708, 1.5708,0);
+    
+    ros::Duration(0.1).sleep();  // In seconds
+  
+    sd_sipA.movePtp(q1);
+    //sd_sipB.movePtp(q2);
+
     ROS_INFO_STREAM("Done");
     // -------------
     ros::ServiceServer serviceSBL = n.advertiseService("SBL_cmd", SBL_cmd);
