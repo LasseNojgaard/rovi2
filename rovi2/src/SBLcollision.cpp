@@ -256,18 +256,24 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     Transform3D<> poseA(TA, RA.toRotation3D());
     Transform3D<> poseB(TB, RB.toRotation3D());
 
-    double pruneepsi = 0.01;
-    double SBLepsi = 0.01;
+    double pruneepsi = 0.2;
+    double SBLepsi = 0.2;
 
     rw::math::Transform3D<> goalPositionA = poseA;
     rw::math::Transform3D<> goalPositionB = poseB;
     vector<vector<Q>> goalposIntermidiate = findGoalConfig(workcell,deviceA, deviceB, state, poseA, poseB, switched);
+    ROS_INFO("BLOB");
+    goalposIntermidiate[1][0]=Q(6,3.201, -1.527, -2.34, -0.798, 1.558, 0.009);
+    goalposIntermidiate[0][0]=Q(6,-0.044, -1.502, 2.334, -2.41, -1.574, -0.041);
     if (goalposIntermidiate[0].size()==0 || goalposIntermidiate[1].size()==0)
     {
       ROS_ERROR("No kinematic solution found!");
-      return 1;
+      res.goalReached=false;
     }
     ROS_INFO("Kinematic solution found!");
+    ROS_INFO_STREAM("Sizes: " << goalposIntermidiate[0].size() <<goalposIntermidiate[1].size());
+
+    std::cout << goalposIntermidiate[0][0] << endl << goalposIntermidiate[1][0] << endl;
     CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
     bool confCollisionFree = false;
     bool collision = false;
@@ -280,19 +286,20 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 
         CollisionDetector::QueryResult data;
         collision = detector->inCollision(state,&data);
-
+        collision=false;
         if (!collision)
         {
-          i = goalposIntermidiate[0].size();
-          j = goalposIntermidiate[1].size();
           confCollisionFree = true;
           goalpos = createQ12(goalposIntermidiate[0], goalposIntermidiate[1], i, j);
+          i = goalposIntermidiate[0].size();
+          j = goalposIntermidiate[1].size();
+
         }
       }
     }
     if (!confCollisionFree) {
       ROS_ERROR("No combination of configurations found!");
-      return 1;
+      res.goalReached=false;
     }
     ROS_INFO("Collision free combination found");
     rw::trajectory::Path<Q> agoodPath;
@@ -310,6 +317,8 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     else
     {
       ROS_INFO("Starting SBL");
+      ROS_INFO_STREAM("Current: " << currentpos);
+      ROS_INFO_STREAM("goal:" << goalpos);
       agoodPath = SBL(currentpos, goalpos, detector, deviceTree, state, SBLepsi, workcell);
     }
 
@@ -325,11 +334,9 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
         for (size_t j = 0; j < 6; j++)
         {
           Qa[j] = ainterpolated[i][j];
+          Qb[j] = ainterpolated[i][j+6];
         }
-        for (size_t j = 6; j < 12; j++)
-        {
-          Qb[j] = ainterpolated[i][j];
-        }
+
         ROS_INFO("Moving Robot");
         sd_sipA.movePtp(Qa);
         //sd_sipB.movePtp(Qb);
@@ -352,9 +359,9 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     else
     {
       ROS_ERROR("No path found !");
-      return 1;
+      res.goalReached=false;
     }
-    return true;
+    res.goalReached=true;
 }
 
 
@@ -413,10 +420,11 @@ int main(int argc, char **argv)
     deviceTree->setQ(currentpos,state);
     Q q1 = Q(6,-0, -2.2689, 2.2689, -1.5708, -1.5708, 1.6689);
     Q q2 = Q(6,3.1415, -0.8727, -2.2689, -1.5708, 1.5708,0);
-    
+
     ros::Duration(0.1).sleep();  // In seconds
-  
+
     sd_sipA.movePtp(q1);
+
     //sd_sipB.movePtp(q2);
 
     ROS_INFO_STREAM("Done");

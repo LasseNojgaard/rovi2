@@ -159,7 +159,7 @@
 </group>
 </group>
 
-<!--
+
  <group>
   <node pkg="robotiq_2f_driver" type="robotiq_2f_driver" name="robotiq_2f_driver">
   </node>
@@ -171,7 +171,6 @@
 	<param name="port" type="int" value="1000"/>
   </node>
   </group>
--->
 
 
 </launch>

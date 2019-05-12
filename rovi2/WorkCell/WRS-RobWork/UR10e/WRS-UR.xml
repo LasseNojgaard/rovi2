@@ -5,13 +5,13 @@
 		<RPY>0 0 0</RPY>
 		<Pos>0 0 0.117</Pos>
 	</Frame>
-	
+
 	<Frame name="TCP" refframe="Joint5">
 		<RPY>0 0 0</RPY>
 		<Pos>0 0 0</Pos>
 	</Frame>
 
-	
+
 	<Frame name="gripperA" refframe="TCP">
 		<RPY>0 0 0</RPY>
 		<Pos>0 0 0</Pos>
@@ -19,7 +19,7 @@
 		<!-- <CollisionModel name="GripperA"> -->
 			<Pos>0.00 0.00 0.135</Pos>
 			<RPY>0 0 0</RPY>
-			<Box x="0.2" y="0.11" z="0.20" /> 
+			<!--<Box x="0.2" y="0.11" z="0.20" /> -->
 
 		<!-- </CollisionModel> -->
 		</Drawable>

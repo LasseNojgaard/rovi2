@@ -13,23 +13,24 @@
 
 #define z 2
 #define qlength 12
-#define tcpdisp 0.25
+#define tcpdisp 1
+#define MAX 10000
 
 
 rw::math::Q createQ12(std::vector<rw::math::Q> iter1, std::vector<rw::math::Q> iter2, int index1, int index2){
-    rw::math::Q result;
+    rw::math::Q result(qlength);
     for(int i=0;i<result.size()/2;i++) {
         result[i] = iter1[index1][i];
-        result[i + result.size()/2 - 1] = iter2[index2][i];
+        result[i + result.size()/2] = iter2[index2][i];
     }
     return result;
 }
 
-rw::math::Transform3D<> relatePoseToTCP(rw::models::WorkCell::Ptr wc, rw::models::Device::Ptr device ,rw::math::Transform3D<> pose, rw::kinematics::State state){
-    rw::kinematics::Frame* table=wc->findFrame("TopPlate");
-    rw::kinematics::Frame* TCP=device->getBase();
-    rw::math::Transform3D<> table2TCP= table->fTf(TCP,state);
-    return pose*table2TCP;
+rw::math::Transform3D<> relatePoseToBase(rw::models::WorkCell::Ptr wc, rw::models::Device::Ptr device ,rw::math::Transform3D<> pose, rw::kinematics::State state){
+  rw::kinematics::Frame* table=wc->findFrame("TopPlate");
+  rw::kinematics::Frame* base=device->getBase();
+  rw::math::Transform3D<> table2base= table->fTf(base,state);
+  return pose*table2base;
 }
 
 rw::math::Transform3D<> accountForGripper(rw::math::Transform3D<> pose)
@@ -42,14 +43,36 @@ std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::WorkCell::Ptr w
 
 
     std::vector<std::vector<rw::math::Q>> result;
-    pose1=relatePoseToTCP(wc, device_1,pose1,state);
+    rw::models::Device::QBox bounds1=device_1->getBounds();
+    rw::models::Device::QBox boundsAdefault=bounds1;
+    std::cout << "Bounds: " << bounds1.first << bounds1.second << std::endl;
+    bounds1.first[1]=0;
+    bounds1.second[1]=rw::math::Pi;
+    device_1->setBounds(bounds1);
+    rw::models::Device::CPtr device1=&*device_1;
+
+    rw::invkin::JacobianIKSolver solver(device1,state);
+    solver.setClampToBounds(true);
+    solver.setMaxIterations(MAX);
+    pose1=relatePoseToBase(wc, device_1,pose1,state);
     pose1=accountForGripper(pose1);
-    rw::invkin::IterativeIK::Ptr solver=rw::invkin::JacobianIKSolver::makeDefault(device_1,state);
-    std::vector<rw::math::Q> iter1= solver->solve(pose1,state);
-    pose2=relatePoseToTCP(wc, device_2,pose2,state);
+    std::vector<rw::math::Q> iter1= solver.solve(pose1,state);
+    device_1->setBounds(boundsAdefault);
+
+    rw::models::Device::QBox bounds2=device_2->getBounds();
+    rw::models::Device::QBox boundsBDefault=bounds2;
+    bounds2.first[1]=-rw::math::Pi;
+    bounds2.second[1]=0;
+    device_2->setBounds(bounds2);
+    rw::models::Device::CPtr device2=&*device_2;
+
+
+    pose2=relatePoseToBase(wc, device_2,pose2,state);
     pose2=accountForGripper(pose2);
-    rw::invkin::IterativeIK::Ptr solver2=rw::invkin::JacobianIKSolver::makeDefault(device_2,state);
-    std::vector<rw::math::Q> iter2 = solver2->solve(pose2,state);
+    rw::invkin::JacobianIKSolver solver2(device_2,state);
+    std::vector<rw::math::Q> iter2 = solver2.solve(pose2,state);
+    device_2->setBounds(boundsBDefault);
+
 
     if (iter1.size()==0 || iter2.size()==0){
         if (!tried)

@@ -1,8 +1,8 @@
 Info,  T0: this is my info call
-Info,  T0: Load /home/christine/catkin_ws/src/robot_plugin/WorkCell/WRS-RobWork/UR10e/Geometry/ToolFlange.obj
+Info,  T0: Load /home/christine/catkin_ws/src/rovi2/rovi2/WorkCell/WRS-RobWork/UR10e/Geometry/ToolFlange.obj
 Debug, T0: Assimp 3.2.0 amd64 gcc debug shared singlethreaded
 Info,  T0: Found a matching importer for this file format
-Info,  T0: Import root directory is '/home/christine/catkin_ws/src/robot_plugin/WorkCell/WRS-RobWork/UR10e/Geometry/'
+Info,  T0: Import root directory is '/home/christine/catkin_ws/src/rovi2/rovi2/WorkCell/WRS-RobWork/UR10e/Geometry/'
 Error, T0: OBJ: No object detected to attach a new mesh instance.
 Skipping one or more lines with the same contents
 Info,  T0: Entering post processing pipeline
