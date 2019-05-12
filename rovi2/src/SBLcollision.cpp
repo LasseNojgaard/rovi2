@@ -259,7 +259,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 
     rw::math::Transform3D<> goalPositionA = poseA;
     rw::math::Transform3D<> goalPositionB = poseB;
-    vector<vector<Q>> goalposIntermidiate = findGoalConfig(deviceA, deviceB, state, poseA, poseB, switched);
+    vector<vector<Q>> goalposIntermidiate = findGoalConfig(workcell,deviceA, deviceB, state, poseA, poseB, switched);
     if (goalposIntermidiate[0].size()==0 || goalposIntermidiate[1].size()==0)
     {
       ROS_ERROR("No kinematic solution found!");
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
     deviceA =workcell->findDevice("UR10A");
     deviceB=workcell->findDevice("UR10B");
     // Get the state of the workcell
-    cout << "Getting state of workcell" << endl;
+    ROS_INFO_STREAM("Getting state of workcell");
     state = workcell->getDefaultState();
 
     // Create a default collision detector
@@ -394,23 +394,23 @@ int main(int argc, char **argv)
 
     CollisionDetector::QueryResult data;
 
-    // Create a configuration
-    cout << "Collecting configuration data" << endl;
-
     Math::seed();
 
-    cout << "Making the vectorOfEnds" << endl;
+    ROS_INFO_STREAM("Making the vectorOfEnds");
     vector<kinematics::Frame*> vectorOfEnds;
     vectorOfEnds.push_back(deviceA->getEnd());
     vectorOfEnds.push_back(deviceB->getEnd());
 
     string refFrame = "RefFrame";
     string TopPlateName = "TopPlate";
-    cout << "making tree" << endl;
+    ROS_INFO_STREAM("making tree");
     deviceTree = new TreeDevice(workcell->findFrame(refFrame), vectorOfEnds, "TreeDevice", state);
-    currentpos = deviceTree->getQ(state);
-    cout << "Done" << endl;
-
+    currentpos[0]=-0;currentpos[1]= -2.2689;currentpos[2]= 2.2689;currentpos[3]= -1.5708;currentpos[4]= -1.5708;currentpos[5]= 1.6689;
+    currentpos[6]=3.1415;currentpos[7]= -0.8727;currentpos[8]= -2.2689;currentpos[9]= -1.5708;currentpos[10]= 1.5708;currentpos[11]= 0;
+    deviceTree->setQ(currentpos,state);
+    sd_sipA->movePtp(Q(6,-0, -2.2689, 2.2689, -1.5708, -1.5708, 1.6689));
+    sd_sipB->movePtp(Q(6,3.1415, -0.8727, -2.2689, -1.5708, 1.5708,0));
+    ROS_INFO_STREAM("Done");
     // -------------
     ros::ServiceServer serviceSBL = n.advertiseService("SBL_cmd", SBL_cmd);
     //---------------------------------------------------------------------------------------------------------
@@ -420,53 +420,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-// TODO ----------------------
-
-/*
-    - Check the time needed to trim the paths and see how much time it cuts.
-      Check and see wether it is recommended or not.
-    - Make 10 paths and use the shortest of these to do the moves.
-    - Check the interpolation
-*/
-
-    /*
-    Q tempQA = Math::ranQ(qMinA,qMaxA);
-
-    deviceA->setQ(qCollision, state);
-    bool Ccollision = detector->inCollision(state, &data);
-    cout << "Conf. in Ccollision: " << Ccollision << " should be in collision " <<  endl;
-    cout << "The amount of colliding frames: " << data.collidingFrames.size() << endl;
-
-    data.collidingFrames.clear();
-    */
-
-    /*
-    //----Own implementation of SBL
-
-    //--Collisionchecking
-    //--Make new configurations
-    Q qMinA = deviceA->getBounds().first;
-    Q qMaxA = deviceA->getBounds().second;
-
-    Q qMinB = deviceB->getBounds().first;
-    Q qMaxB = deviceB->getBounds().second;
-
-    bool collision = true;
-
-    Q tempQA;
-    Q tempQB;
-    while(collision)
-    {
-      cout << "i" << endl;
-        tempQA = Math::ranQ(qMinA, qMaxA);
-        tempQB = Math::ranQ(qMinB, qMaxB);
-
-        deviceA->setQ(tempQA,state);
-        deviceB->setQ(tempQB,state);
-        CollisionDetector::QueryResult data;
-        collision = detector->inCollision(state,&data);
-
-    }
-    cout << "Collision free config: " << tempQA << " , "<< endl << tempQB << endl;
-*/
