@@ -13,7 +13,7 @@
 
 #define z 2
 #define qlength 12
-#define tcpdisp 1
+#define tcpdisp 0.75
 #define MAX 10000
 
 
@@ -45,7 +45,6 @@ std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::WorkCell::Ptr w
     std::vector<std::vector<rw::math::Q>> result;
     rw::models::Device::QBox bounds1=device_1->getBounds();
     rw::models::Device::QBox boundsAdefault=bounds1;
-    std::cout << "Bounds: " << bounds1.first << bounds1.second << std::endl;
     bounds1.first[1]=0;
     bounds1.second[1]=rw::math::Pi;
     device_1->setBounds(bounds1);
