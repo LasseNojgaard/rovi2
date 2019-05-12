@@ -142,8 +142,6 @@ bool graspObject(rovi2::Grasp_cmd::Request &req, rovi2::Grasp_cmd::Response &res
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "talker");
-  ros::init(argc, argv, "listener");
   ros::init(argc, argv, "grasp_service_server");
 
   ros::NodeHandle nh;
