@@ -1,0 +1,28 @@
+Info,  T0: this is my info call
+Info,  T0: Load /home/christine/catkin_ws/src/robot_plugin/WorkCell/WRS-RobWork/UR10e/Geometry/ToolFlange.obj
+Debug, T0: Assimp 3.2.0 amd64 gcc debug shared singlethreaded
+Info,  T0: Found a matching importer for this file format
+Info,  T0: Import root directory is '/home/christine/catkin_ws/src/robot_plugin/WorkCell/WRS-RobWork/UR10e/Geometry/'
+Error, T0: OBJ: No object detected to attach a new mesh instance.
+Skipping one or more lines with the same contents
+Info,  T0: Entering post processing pipeline
+Debug, T0: Generate spatially-sorted vertex cache
+Debug, T0: JoinVerticesProcess begin
+Debug, T0: Mesh 0 (202,209,238) | Verts in: 210 out: 93 | ~55.7143%
+Debug, T0: Mesh 1 (defaultobject) | Verts in: 4683 out: 1636 | ~65.0651%
+Debug, T0: Mesh 2 (defaultobject) | Verts in: 372 out: 126 | ~66.129%
+Debug, T0: Mesh 3 (defaultobject) | Verts in: 1116 out: 378 | ~66.129%
+Debug, T0: Mesh 4 (defaultobject) | Verts in: 21516 out: 4377 | ~79.657%
+Debug, T0: Mesh 5 (defaultobject) | Verts in: 1407 out: 411 | ~70.7889%
+Debug, T0: Mesh 6 (defaultobject) | Verts in: 744 out: 248 | ~66.6667%
+Debug, T0: Mesh 7 (defaultobject) | Verts in: 180 out: 62 | ~65.5556%
+Debug, T0: Mesh 8 (defaultobject) | Verts in: 114 out: 38 | ~66.6667%
+Debug, T0: Mesh 9 (defaultobject) | Verts in: 39 out: 15 | ~61.5385%
+Debug, T0: Mesh 10 (defaultobject) | Verts in: 2214 out: 734 | ~66.8473%
+Debug, T0: Mesh 11 (defaultobject) | Verts in: 39 out: 15 | ~61.5385%
+Debug, T0: Mesh 12 (defaultobject) | Verts in: 114 out: 38 | ~66.6667%
+Debug, T0: Mesh 13 (defaultobject) | Verts in: 39 out: 15 | ~61.5385%
+Debug, T0: Mesh 14 (defaultobject) | Verts in: 114 out: 38 | ~66.6667%
+Debug, T0: Mesh 15 (defaultobject) | Verts in: 39 out: 15 | ~61.5385%
+Info,  T0: JoinVerticesProcess finished | Verts in: 32940 out: 8239 | ~75.0%
+Info,  T0: Leaving post processing pipeline
