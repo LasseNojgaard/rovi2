@@ -12,8 +12,10 @@
 #include <rw/invkin/JacobianIKSolver.hpp>
 
 #define z 2
+#define x 0
 #define qlength 12
 #define tcpdisp 0.75
+#define atcpdisp 1
 #define MAX 10000
 
 
@@ -45,17 +47,21 @@ std::vector<std::vector<rw::math::Q>> findGoalConfig(rw::models::WorkCell::Ptr w
     std::vector<std::vector<rw::math::Q>> result;
     rw::models::Device::QBox bounds1=device_1->getBounds();
     rw::models::Device::QBox boundsAdefault=bounds1;
-    bounds1.first[1]=0;
-    bounds1.second[1]=rw::math::Pi;
+    bounds1.first[1]=-rw::math::Pi;
+    bounds1.second[1]=0;
     device_1->setBounds(bounds1);
     rw::models::Device::CPtr device1=&*device_1;
+
 
     rw::invkin::JacobianIKSolver solver(device1,state);
     solver.setClampToBounds(true);
     solver.setMaxIterations(MAX);
     pose1=relatePoseToBase(wc, device_1,pose1,state);
-    pose1=accountForGripper(pose1);
-    std::vector<rw::math::Q> iter1= solver.solve(pose1,state);
+    rw::math::Vector3D<> translation=pose1.P();
+    translation[x]+=-atcpdisp;
+    rw::math::Transform3D<> pose_1(translation, pose1.R());
+    pose1=accountForGripper(pose_1);
+    std::vector<rw::math::Q> iter1= solver.solve(pose_1,state);
     device_1->setBounds(boundsAdefault);
 
     rw::models::Device::QBox bounds2=device_2->getBounds();

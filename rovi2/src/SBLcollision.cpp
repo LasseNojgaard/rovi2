@@ -103,7 +103,6 @@ void line()
 
 rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, CollisionDetector::Ptr aDetector, TreeDevice::Ptr aDeviceTree, State aState, double epsilon, WorkCell::Ptr aWorkcell)
 {
-  cout << "Beginning SBL" << endl;
   rw::trajectory::Path<Q> somePath;
   // Constraint
   rw::pathplanning::QConstraint::Ptr treeConstraint = rw::pathplanning::QConstraint::make(aDetector, aDeviceTree, aState);
@@ -124,7 +123,7 @@ rw::trajectory::Path<Q> SBL(Q inputConfiguration, Q outputConfiguration, Collisi
   Q pos = aDeviceTree->getQ(aState);
 
   cout << "Making the trajectory from: " << endl;
-  cout << pos << endl;
+  cout << inputConfiguration << endl;
 
   cout << "To next configuration: " << endl;
   cout << outputConfiguration << endl;
@@ -241,11 +240,11 @@ rw::trajectory::Path<Q> interpolate(rw::trajectory::Path<Q> inputPath, int steps
 bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 {
     ROS_INFO("In service");
-        ros::NodeHandle n;
+    ros::NodeHandle n;
     //ros::NodeHandle n1;
     caros::SerialDeviceSIProxy sd_sipA(n, "caros_universalrobot");
-    //caros::SerialDeviceSIProxy sd_sipB(n1, "caros_universalrobot2");
-    currentpos = deviceTree->getQ(state);
+    caros::SerialDeviceSIProxy sd_sipB(n, "caros_universalrobot2");
+    //currentpos = deviceTree->getQ(state);
 
     Vector3D<> TA(req.tAx, req.tAy, req.tAz);
     bool goal = req.goal;
@@ -263,17 +262,16 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     rw::math::Transform3D<> goalPositionB = poseB;
     vector<vector<Q>> goalposIntermidiate = findGoalConfig(workcell,deviceA, deviceB, state, poseA, poseB, switched);
     ROS_INFO("BLOB");
-    goalposIntermidiate[1][0]=Q(6,3.201, -1.527, -2.34, -0.798, 1.558, 0.009);
-    goalposIntermidiate[0][0]=Q(6,-0.044, -1.502, 2.334, -2.41, -1.574, -0.041);
-    if (goalposIntermidiate[0].size()==0 || goalposIntermidiate[1].size()==0)
+    if (goalposIntermidiate.empty())
     {
       ROS_ERROR("No kinematic solution found!");
       res.goalReached=false;
     }
+    else {
     ROS_INFO("Kinematic solution found!");
-    ROS_INFO_STREAM("Sizes: " << goalposIntermidiate[0].size() <<goalposIntermidiate[1].size());
+    //ROS_INFO_STREAM("Sizes: " << goalposIntermidiate[0].size() <<goalposIntermidiate[1].size());
 
-    std::cout << goalposIntermidiate[0][0] << endl << goalposIntermidiate[1][0] << endl;
+    ROS_INFO_STREAM(goalposIntermidiate[0][0] << "," << goalposIntermidiate[1][0]);
     CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
     bool confCollisionFree = false;
     bool collision = false;
@@ -326,6 +324,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
     {
       rw::trajectory::Path<Q> aprunedPath = pathPrune(agoodPath, pruneepsi, state, detector, deviceTree);
       rw::trajectory::Path<Q> ainterpolated = interpolate(aprunedPath,amountOfSteps);
+      delete detector;
       ROS_INFO("Pruned and iterpolated");
       Q Qa = Q(6);
       Q Qb = Q(6);
@@ -339,7 +338,7 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
 
         ROS_INFO("Moving Robot");
         sd_sipA.movePtp(Qa);
-        //sd_sipB.movePtp(Qb);
+        sd_sipB.movePtp(Qb);
 
       }
       ROS_INFO_STREAM("Qa: ");
@@ -347,23 +346,22 @@ bool SBL_cmd(rovi2::SBL_cmd::Request &req, rovi2::SBL_cmd::Response &res)
       {
         ROS_INFO_STREAM(Qa[i] << ",");
       }
-      ROS_INFO_STREAM("/n Qb: ");
+      ROS_INFO_STREAM("Qb: ");
       for (size_t i = 0; i < Qb.size(); i++)
       {
         ROS_INFO_STREAM(Qb[i] << ",");
       }
-
-      ROS_INFO_STREAM("/n Goalposition: " << goalpos << endl);
-      currentpos = goalpos;
     }
     else
     {
       ROS_ERROR("No path found !");
       res.goalReached=false;
     }
+    ROS_INFO_STREAM("Goalposition: " << goalpos << endl);
+    currentpos = goalpos;
     res.goalReached=true;
 }
-
+}
 
 
 
@@ -390,7 +388,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::NodeHandle n2;
     caros::SerialDeviceSIProxy sd_sipA(n, "caros_universalrobot");
-    //caros::SerialDeviceSIProxy sd_sipB(n2, "caros_universalrobot2");
+    caros::SerialDeviceSIProxy sd_sipB(n2, "caros_universalrobot2");
     ROS_INFO_STREAM("SerialDeviceSIProxy created");
     workcell=caros::getWorkCell();
     deviceA =workcell->findDevice("UR10A");
@@ -400,9 +398,9 @@ int main(int argc, char **argv)
     state = workcell->getDefaultState();
 
     // Create a default collision detector
-    CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
+    //CollisionDetector::Ptr detector = new CollisionDetector(workcell, ProximityStrategyFactory::makeDefaultCollisionStrategy());
 
-    CollisionDetector::QueryResult data;
+    //CollisionDetector::QueryResult data;
 
     Math::seed();
 
@@ -425,7 +423,7 @@ int main(int argc, char **argv)
 
     sd_sipA.movePtp(q1);
 
-    //sd_sipB.movePtp(q2);
+    sd_sipB.movePtp(q2);
 
     ROS_INFO_STREAM("Done");
     // -------------

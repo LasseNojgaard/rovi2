@@ -3,7 +3,7 @@
   <!-- Define the parameterisation of the ROS parameters -->
   <arg name="device_name" default="UR10A" />
   <arg name="device_ip" default="192.168.1.130" />
-  <arg name="callback_port" default="33333" />
+  <arg name="callback_port" default="33331" />
   <arg name="callback_ip" default="192.168.1.1" /> <!--192.168.1.1-->
 
   <!-- Set the ROS parameters -->
