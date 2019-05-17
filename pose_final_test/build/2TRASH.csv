@@ -1,0 +1,3 @@
+RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,9,RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,9,0.00591183,33.1126,31.4442,0.0045887,66.0044,

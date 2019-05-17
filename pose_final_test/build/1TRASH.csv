@@ -1,0 +1,9 @@
+RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,9,0.00609725,17.5066,RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,2,0.00642973,23.4748,12.7397,0.00554421,45.2255,2.72835,16.2932
+4000,3,0.00528186,48.1432,RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,2,RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,2,0.00642973,23.4748,22.781,0.00554421,45.2255,3.65202,36.5537
+4000,3,RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,6,0.00615431,32.8912,27.429,0.00531794,51.5915,RANSAC, Scene, RMSE-Global, Inliers-Global, Time-Global,RMSE-local, Inliers-local, Time-local, Time-Total
+4000,3,0.00528186,48.1432,24.72,0.00512496,49.0716,

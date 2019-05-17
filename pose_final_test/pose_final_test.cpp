@@ -67,7 +67,7 @@ void align_scene(PointCloud<PointT>::Ptr scene);
 void downscale(PointCloud<PointT>::Ptr scene);
 
 std::ofstream outfile;
-string filename= "FinalTestDUO.csv";
+string filename= "TRASH.csv";
 
 int main(int argc, char**argv) {
 
@@ -95,7 +95,7 @@ int main(int argc, char**argv) {
                 PointCloud<PointT>::Ptr grab(new PointCloud<PointT>);
               
                 loadPCDFile(objects[objectNr], *object);
-                loadPCDFile("/home/student/Desktop/DUO/scene"+std::to_string(sceneNr)+".pcd", *scene);
+                loadPCDFile("/home/student/Desktop/FAR/scene"+std::to_string(sceneNr)+".pcd", *scene);
                 loadPCDFile("/home/student/Desktop/grab.pcd", *grab);
                 pcl::removeNaNFromPointCloud(*scene, *scene, indices);
                 clock_t beginTotal = clock();
@@ -109,8 +109,10 @@ int main(int argc, char**argv) {
                     align_object_grab(object,grab,false);
                 }
 
+
                
                 scene = filter_scene(scene);
+
 
                 downscale(scene);
 
@@ -363,18 +365,18 @@ Matrix4f global_allignment(PointCloud<PointT>::Ptr object, PointCloud<PointT>::P
 
     // Show result
 
-    
+    /*
     
     {
         PCLVisualizer v("After global alignment");
         v.addPointCloud<PointT>(object_aligned, PointCloudColorHandlerCustom<PointT>(object_aligned, 0, 255, 0), "object_aligned");
-        v.addPointCloud<PointT>(scene, PointCloudColorHandlerCustom<PointT>(scene, 255, 0, 0),"scene");
+        v.addPointCloud<PointT>(scene, PointCloudColorHandlerCustom<PointT>(scene, 0, 0, 255),"scene");
         //v.addPointCloud<PointT>(object_aligned_afine, PointCloudColorHandlerCustom<PointT>(scene, 0, 0, 255),"Rotated");
         v.spin();
         v.close();
     }
     
-    
+    */
 
 
     return pose;
@@ -469,7 +471,7 @@ Matrix4f local_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>:
     {
         PCLVisualizer v("After local alignment");
         v.addPointCloud<PointNormal>(object_aligned, PointCloudColorHandlerCustom<PointNormal>(object_aligned, 0, 255, 0), "object_aligned");
-        v.addPointCloud<PointNormal>(scene, PointCloudColorHandlerCustom<PointNormal>(scene, 255, 0, 0),"scene");
+        v.addPointCloud<PointNormal>(scene, PointCloudColorHandlerCustom<PointNormal>(scene, 0, 0, 255),"scene");
         v.spin();
         v.close();
     }

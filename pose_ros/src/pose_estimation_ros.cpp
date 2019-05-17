@@ -113,7 +113,7 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
     PointCloud<PointT>::Ptr grab(new PointCloud<PointT>);
   
     loadPCDFile(objects[objectIterator], *object);
-    loadPCDFile("/home/christine/catkin_ws/src/rovi2/pose_ros/grab.pcd", *grab);
+    loadPCDFile("/home//student/Desktop/grab.pcd", *grab);
 
     align_scene(scene);
 
@@ -141,7 +141,7 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
 
     Matrix4f poseGlobal, poseLocal, totalPose;
 
-    poseGlobal=global_allignment(object, scene,16, 0.05);
+    poseGlobal=global_allignment(object, scene,16, 0.075);
     
 
     pcl::transformPointCloud (*object, *object_aligned_global, poseGlobal);
@@ -157,6 +157,16 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
 
     totalPose = poseGlobal+poseLocal+poseGrab;
     std::vector<float> angles = get_Theta(totalPose);
+    /*
+    cout << "ID: " << objectIterator;
+    cout << " X: " << centroid[0];
+    cout << " Y: " << centroid[1];
+    cout << " Z: " << centroid[2];
+    cout << " ROLL: " << angles[0];
+    cout << " Pitch: " << angles[1];
+    cout << " Yaw: " << angles[2];
+
+    */
 
     pose_ros::Object_pose msg;
     msg.ID = objectIterator;
@@ -180,8 +190,8 @@ void posesCallback(const boost::shared_ptr<const sensor_msgs::PointCloud2>& rosI
 
 int main(int argc, char**argv) {
 
-    objects.push_back("/home/christine/catkin_ws/src/rovi2/pose_ros/squarePCDV3.pcd");
-    objects.push_back("/home/christine/catkin_ws/src/rovi2/pose_ros/trianglePCD.pcd"); 
+    objects.push_back("/home/student/Desktop/squarePCDV3.pcd");
+    objects.push_back("/home/student/Desktop/trianglePCD.pcd"); 
     ros::init(argc, argv, "pose_estimation");
     ros::NodeHandle nh;
     ROS_INFO("About to enter %s" , "Callback");
@@ -285,7 +295,7 @@ Matrix4f global_allignment(PointCloud<PointT>::Ptr object, PointCloud<PointT>::P
             const float penaltyi = outlier_rate;
             vector<float> angles = get_Theta(T);
             // Update result
-            if(penaltyi < penalty && abs(angles[0])<0.174533&&abs(angles[2])<0.174533) {
+            if(penaltyi < penalty && abs(angles[0])<0.261799&&abs(angles[2])<0.261799) {
                 penalty = penaltyi;
                 pose = T;
             }
@@ -303,25 +313,20 @@ Matrix4f global_allignment(PointCloud<PointT>::Ptr object, PointCloud<PointT>::P
             if(distsq[i][0] <= thressq)
                 ++inliers, rmse += distsq[i][0];
         rmse = sqrtf(rmse / inliers);
-        
-       // close the opened 
-        if(rmse > bestRMSE)
-        {
-            bestRMSE = rmse;
-            bestRadius=radiusSearch;
-            bestInliers = inliers;
-            bestK =kSearch;
-        }
-        if(inliers > bestInliersForIn)
-        {
-            bestInliersForIn = inliers;
-            bestRadiusInliers=radiusSearch;
-            bestRMSEForIn=rmse;
-            bestKInliers = kSearch;
-        }
+
     } // End timing
 
+/*
+    {
+        PCLVisualizer v("After global alignment");
+        v.addPointCloud<PointT>(object_aligned, PointCloudColorHandlerCustom<PointT>(object_aligned, 0, 255, 0), "object_aligned");
+        v.addPointCloud<PointT>(scene, PointCloudColorHandlerCustom<PointT>(scene, 255, 0, 0),"scene");
+        //v.addPointCloud<PointT>(object_aligned_afine, PointCloudColorHandlerCustom<PointT>(scene, 0, 0, 255),"Rotated");
+        v.spin();
+        v.close();
+    }
     
+*/
     return pose;
     //return object_aligned;
 
@@ -389,6 +394,17 @@ Matrix4f local_allignment(PointCloud<PointT>::Ptr objectObj, PointCloud<PointT>:
         rmse = sqrtf(rmse / inliers);
     } // End timing
     
+    /*
+    {
+        PCLVisualizer v("After global alignment");
+        v.addPointCloud<PointT>(object_aligned, PointCloudColorHandlerCustom<PointT>(object_aligned, 0, 255, 0), "object_aligned");
+        v.addPointCloud<PointT>(scene, PointCloudColorHandlerCustom<PointT>(scene, 255, 0, 0),"scene");
+        //v.addPointCloud<PointT>(object_aligned_afine, PointCloudColorHandlerCustom<PointT>(scene, 0, 0, 255),"Rotated");
+        v.spin();
+        v.close();
+    }
+    */
+
     //return object_aligned;
     return pose;
 }
